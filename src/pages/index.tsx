@@ -1,4 +1,4 @@
-export * from './auth';
+export { LogIn, SignUp } from './auth';
 export * from './createReservation';
 export * from './createResource';
 export * from './home';
