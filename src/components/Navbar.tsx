@@ -3,14 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menubar } from 'primereact/menubar';
 import { PrimeIcons } from 'primereact/api';
 import { useAuth } from '../pages/auth';
+import { Button } from 'primereact/button';
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
   const model = React.useMemo(() => {
+    const createResource = {
+      id: 'create',
+      label: 'Create a Resource',
+      icon: 'pi pi-plus',
+      command: () => navigate('create'),
+    };
+
     if (auth.user) {
       return [
+        createResource,
         {
           id: 'resourceList',
           label: 'My Resources',
@@ -25,10 +34,23 @@ export const Navbar = () => {
           id: 'profile',
           label: 'My Profile',
           command: () => navigate('profile'),
+          items: [
+            {
+              id: 'profile',
+              label: 'My Profile',
+              command: () => navigate('profile'),
+            },
+            {
+              id: 'logout',
+              label: 'Log out',
+              command: () => auth.signout(() => navigate('/')),
+            },
+          ],
         },
       ];
     } else {
       return [
+        createResource,
         {
           id: 'login',
           label: 'Log In',
@@ -48,14 +70,16 @@ export const Navbar = () => {
       <Menubar
         start={
           <Link to="/" replace>
-            <>
+            <Button link>
               <span className={`pi ${PrimeIcons.CALENDAR} mx-2`} />
-              <span>Reservation App</span>
-            </>
+              Reservation App
+            </Button>
           </Link>
         }
         model={model}
-        pt={{ root: { className: 'justify-content-between' } }}
+        pt={{
+          root: { className: 'justify-content-between' }, // places the menu to the right
+        }}
       />
     </>
   );

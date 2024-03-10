@@ -1,6 +1,16 @@
 import * as React from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
-import { Home, LogIn, NotFound, Profile, ReservationList, ResourceList, SignUp } from './pages';
+import {
+  CreateReservation,
+  CreateResource,
+  Home,
+  LogIn,
+  NotFound,
+  Profile,
+  ReservationList,
+  ResourceList,
+  SignUp,
+} from './pages';
 import { AuthProvider, AuthStatus, RequireAuth } from './pages/auth';
 import { Navbar } from './components';
 
@@ -12,8 +22,12 @@ export default function App() {
           element={
             <>
               <Navbar />
+              <div className="flex justify-content-center">
+                <div className="w-full md:w-10 xl:w-9 bg-blue-100 p-2">
+                  <Outlet />
+                </div>
+              </div>
               <AuthStatus />
-              <Outlet />
             </>
           }
         >
@@ -44,6 +58,15 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route
+            path="create"
+            element={
+              <RequireAuth>
+                <CreateResource />
+              </RequireAuth>
+            }
+          />
+          <Route path="reserve/:id" element={<CreateReservation />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

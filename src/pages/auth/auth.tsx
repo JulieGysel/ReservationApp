@@ -29,11 +29,11 @@ export const AuthStatus = () => {
   let navigate = useNavigate();
 
   if (!auth.user) {
-    return <p>You are not logged in.</p>;
+    return <p className="text-center">You are not logged in.</p>;
   }
 
   return (
-    <p>
+    <p className="text-center">
       Welcome {auth.user}!{' '}
       <button
         onClick={() => {
