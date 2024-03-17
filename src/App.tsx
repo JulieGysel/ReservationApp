@@ -1,19 +1,75 @@
-import { useState } from 'react';
-import { Button } from 'primereact/button';
-import 'primereact/resources/themes/saga-blue/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
+import * as React from 'react';
+import { Routes, Route, Outlet } from 'react-router-dom';
+import {
+  CreateReservation,
+  CreateResource,
+  Home,
+  LogIn,
+  NotFound,
+  Profile,
+  ReservationList,
+  ResourceList,
+  SignUp,
+} from './pages';
+import { AuthProvider, AuthStatus, RequireAuth } from './pages/auth';
+import { Navbar } from './components';
 
-function App() {
-  const [count, setCount] = useState(0);
-
+export default function App() {
   return (
-    <div className="text-center">
-      <Button label="Click" icon="pi pi-plus" onClick={(e) => setCount(count + 1)}></Button>
-      <div className="text-2xl text-900 mt-3">{count}</div>
-    </div>
+    <AuthProvider>
+      <Routes>
+        <Route
+          element={
+            <>
+              <Navbar />
+              <div className="flex justify-content-center">
+                <div className="w-full md:w-10 xl:w-9 bg-blue-100 p-2">
+                  <Outlet />
+                </div>
+              </div>
+              <AuthStatus />
+            </>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="/login" element={<LogIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="resources"
+            element={
+              <RequireAuth>
+                <ResourceList />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reservations"
+            element={
+              <RequireAuth>
+                <ReservationList />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="create"
+            element={
+              <RequireAuth>
+                <CreateResource />
+              </RequireAuth>
+            }
+          />
+          <Route path="reserve/:id" element={<CreateReservation />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }
-
-export default App;
