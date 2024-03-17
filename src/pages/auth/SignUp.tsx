@@ -5,6 +5,7 @@ import { Formik, FormikValues } from 'formik';
 
 import { useAuth } from '.';
 import { InputField } from '../../components';
+import { signupValidationSchema } from './validationSchemas';
 
 export const SignUp = () => {
   const navigate = useNavigate();
@@ -22,16 +23,22 @@ export const SignUp = () => {
 
   return (
     <div className="flex justify-content-center p-2">
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={signupValidationSchema}
+      >
         {({ handleSubmit }) => {
           return (
-            <form onSubmit={handleSubmit} className="text-center w-full md:w-25rem">
-              <InputField name="email" type="email" label="Email" />
-              <InputField name="password" type="password" label="Password" />
-              <InputField name="repeatPassword" type="password" label="Confirm Password" />
-              <Button size="large" type="submit" className="mb-4">
-                Sign Up
-              </Button>
+            <form onSubmit={handleSubmit} className="w-full md:w-25rem">
+              <InputField name="email" type="email" label="Email" required />
+              <InputField name="password" type="password" label="Password" required />
+              <InputField name="repeatPassword" type="password" label="Confirm Password" required />
+              <div className="text-center">
+                <Button size="large" type="submit" className="mb-4">
+                  Sign Up
+                </Button>
+              </div>
             </form>
           );
         }}

@@ -5,23 +5,31 @@ type InputFieldProps = {
   name: string;
   label: string;
   type: InputTextProps['type'];
+  required?: boolean;
 };
 
-export const InputField = ({ name, label, type }: InputFieldProps) => {
+export const InputField = ({ name, label, type, required = false }: InputFieldProps) => {
   const { handleChange } = useFormikContext();
-  const [, { value }] = useField(name);
+  const [{ value }, { error, touched }, { setTouched }] = useField(name);
 
   return (
-    <span className="p-float-label my-5">
+    <div className="my-3">
+      <label htmlFor={name}>
+        {label}
+        {required && '*'}
+      </label>
       <InputText
         id={name}
         name={name}
         type={type}
-        className="p-3 input-text-lg w-full"
+        className={`p-3 input-text-lg w-full ${touched && error && 'p-invalid'}`}
         value={value}
         onChange={handleChange}
+        onBlur={() => setTouched(true)}
+        required={required}
       />
-      <label htmlFor={name}>{label}</label>
-    </span>
+      {/* the empty character here prevents page jumps */}
+      {touched && error ? <small>{error}</small> : <small>⠀</small>}
+    </div>
   );
 };

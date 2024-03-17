@@ -4,6 +4,7 @@ import { Formik, FormikValues } from 'formik';
 import { Button } from 'primereact/button';
 import { useAuth } from '.';
 import { InputField } from '../../components';
+import { loginValidationSchema } from './validationSchemas';
 
 export const LogIn = () => {
   const navigate = useNavigate();
@@ -21,15 +22,21 @@ export const LogIn = () => {
 
   return (
     <div className="flex justify-content-center p-2">
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={loginValidationSchema}
+      >
         {({ handleSubmit }) => {
           return (
-            <form className="text-center w-full md:w-25rem" onSubmit={handleSubmit}>
-              <InputField name="email" label="Email" type="email" />
-              <InputField name="password" label="Password" type="password" />
-              <Button size="large" type="submit" className="mb-4">
-                Login
-              </Button>
+            <form className="w-full md:w-25rem" onSubmit={handleSubmit}>
+              <InputField name="email" label="Email" type="email" required />
+              <InputField name="password" label="Password" type="password" required />
+              <div className="text-center">
+                <Button size="large" type="submit" className="mb-4 ">
+                  Login
+                </Button>
+              </div>
             </form>
           );
         }}
