@@ -1,19 +1,21 @@
 import React from 'react';
 import '../../index.css';
 
-import { useState, useEffect } from 'react';
+import { Formik, FormikValues } from 'formik';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { InputNumber } from 'primereact/inputnumber';
-import { Calendar } from 'primereact/calendar';
 import { Panel } from 'primereact/panel';
 import { Card } from 'primereact/card';
 import { SelectButton } from 'primereact/selectbutton';
-import { Tooltip } from 'primereact/tooltip';
 import { PrimeIcons } from 'primereact/api';
-import { Checkbox } from 'primereact/checkbox';
-import { Nullable } from 'primereact/ts-helpers';
+import {
+  CalendarField,
+  CheckboxField,
+  InputField,
+  NumberField,
+  SelectButtonsField,
+  TextAreaField,
+} from '../../components';
+import { resourceValidationSchema } from './validationSchemas';
 
 enum EditMode {
   Toggle,
@@ -375,129 +377,70 @@ export class AvailabilityPanel extends React.Component {
 }
 
 export const CreateResource = () => {
-  const [name, setName] = useState('');
+  const handleSubmit = (values: FormikValues) => {
+    console.log(values);
+  };
 
-  const [timeslot, setTimeslot] = useState<Nullable<Date>>(new Date('1 Jan 1970 00:30:00'));
-  const [timeMax, setTimeMax] = useState<Nullable<Date>>(new Date('1 Jan 1970 00:30:00'));
-
-  const privacyOptions = [
-    { label: 'everyone', value: '1' },
-    { label: 'signed-id', value: '2' },
-    { label: 'whitelist', value: '3' },
-  ];
-
-  const [privacy, setPrivacy] = useState(privacyOptions[0]);
-
-  const [flagAnonymous, setFlagAnonymous] = useState(false);
-
-  const [showWhitelist, setShowWhitelist] = React.useState(false);
-
-  const [valid, setValid] = useState(false);
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // event.preventDefault();
-    //let formData = new FormData(event.currentTarget);
-  }
-
-  function onNameChange(value) {
-    setValid(value != '');
-  }
-
-  // useEffect(() => {
-  //   setPrivacy(privacyOptions[0]);
-  // }, []);
+  const initialValues = {
+    name: '',
+    description: '',
+    privacy: 'all',
+    anonymous: false,
+    capacity: 1,
+    timeslot: new Date('1 Jan 1970 00:30:00'),
+    maximumLength: new Date('1 Jan 1970 00:30:00'),
+  };
 
   return (
     <div className={'flex flex-row align-items-start h-full'}>
       <div className={'flex flex-column align-items-start h-full'}>
-        <form onSubmit={handleSubmit}>
-          <Panel header="Resource" toggleable>
-            <div className="flex flex-column gap-2">
-              <label htmlFor="name">Name</label>
-              <InputText
-                id="name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  onNameChange(e.target.value);
-                }}
-              />
-            </div>
-            <div className="flex flex-column gap-2">
-              <label htmlFor="description">Description</label>
-              <InputTextarea id="description" autoResize rows={2} cols={30} />
-            </div>
-          </Panel>
-          <Panel header="Privacy" toggleable>
-            <div className="flex flex-row align-items-center gap-2">
-              <SelectButton
-                options={privacyOptions}
-                value={privacy}
-                onChange={(e) => {
-                  setPrivacy(e.target.value);
-                  setShowWhitelist(e.target.value === '3');
-                }}
-              />
-              <span
-                id="tooltip_privacy"
-                className={`tooltip-privacy pi ${PrimeIcons.INFO_CIRCLE} mx-2`}
-              />
-              <Tooltip target=".tooltip-privacy">
-                <div className="flex align-items-center">TODO text</div>
-              </Tooltip>
-            </div>
-            <div className="pt-2">
-              <Checkbox
-                inputId="checkbox_anonymous"
-                checked={flagAnonymous}
-                onChange={(e) => setFlagAnonymous(e.checked)}
-              ></Checkbox>
-              <label htmlFor="checkbox_anonymous" className="ml-2">
-                Anonymous reservations
-              </label>
-            </div>
-          </Panel>
-          {showWhitelist ? <Panel header="User whitelist" toggleable></Panel> : null}
+        <Formik
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          validationSchema={resourceValidationSchema}
+        >
+          {({ handleSubmit, values }) => (
+            <form onSubmit={handleSubmit}>
+              <Panel header="Resource" toggleable>
+                <InputField name="name" label="Name" required type={'text'} />
+                <TextAreaField name={'description'} label={'Description'} />
+              </Panel>
 
-          <Panel header="Reservation limits" toggleable>
-            <div className="flex flex-row align-items-center gap-2">
-              <div className="flex flex-column gap-2">
-                <label htmlFor="capacity">Capacity</label>
-                <InputNumber id="capacity" min={1} value={1} showButtons></InputNumber>
-                <label htmlFor="timeslot">Timeslot</label>
-                <Calendar
-                  id="timeslot"
-                  value={timeslot}
-                  onChange={(e) => setTimeslot(e.value)}
-                  timeOnly
+              <Panel header="Privacy" toggleable>
+                <SelectButtonsField
+                  name="privacy"
+                  label="Which people can create reservations?"
+                  options={[
+                    { label: 'All', value: 'all' },
+                    { label: 'Signed-in', value: 'signedIn' },
+                    { label: 'Whitelisted', value: 'whitelist' },
+                  ]}
                 />
-                <label htmlFor="maximum">Maximum</label>
-                <Calendar
-                  id="maximum"
-                  value={timeMax}
-                  onChange={(e) => setTimeMax(e.value)}
-                  timeOnly
-                />
+                <CheckboxField name="anonymous" label="Allow anonymous reservations" />
+              </Panel>
+
+              {values.privacy === 'whitelist' ? (
+                <Panel header="User whitelist" toggleable></Panel>
+              ) : null}
+
+              <Panel header="Reservation limits" toggleable>
+                <NumberField name={'capacity'} label={'Maximum capaxity'} min={1} />
+                <CalendarField name="timeslot" label="Timeslot length" />
+                <CalendarField name="maximumLength" label="Maximum reservation length" />
+              </Panel>
+              <div
+                className="flex w-full pb-4 pt-4"
+                style={{
+                  justifyContent: 'center',
+                  borderRadius: 'var(--border-radius)',
+                  backgroundColor: 'var(--surface-card)',
+                }}
+              >
+                <Button label="Create" type="submit" icon="pi pi-check" className="font-semibold" />
               </div>
-            </div>
-          </Panel>
-          <div
-            className="flex w-full pb-4 pt-4"
-            style={{
-              justifyContent: 'center',
-              borderRadius: 'var(--border-radius)',
-              backgroundColor: 'var(--surface-card)',
-            }}
-          >
-            <Button
-              label="Create"
-              type="submit"
-              icon="pi pi-check"
-              className="font-semibold"
-              disabled={!valid}
-            />
-          </div>
-        </form>
+            </form>
+          )}
+        </Formik>
       </div>
       <AvailabilityPanel></AvailabilityPanel>
     </div>
