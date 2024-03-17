@@ -1,56 +1,41 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '.';
-import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { Formik, FormikValues } from 'formik';
+
+import { useAuth } from '.';
+import { InputField } from '../../components';
 
 export const SignUp = () => {
-  let navigate = useNavigate();
-  let location = useLocation();
-  let auth = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const auth = useAuth();
 
-  let from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/';
+  const initialValues = { email: '', password: '', repeatPassword: '' };
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    let formData = new FormData(event.currentTarget);
-    let username = formData.get('email') as string;
-
-    auth.signin(username, () => {
-      username && navigate(from, { replace: true });
+  const handleSubmit = (values: FormikValues) => {
+    auth.signin(values.email, () => {
+      values.email && navigate(from, { replace: true });
     });
-  }
+  };
 
   return (
     <div className="flex justify-content-center p-2">
-      <form onSubmit={handleSubmit} className="text-center w-full md:w-25rem">
-        <span className="p-float-label my-5">
-          <InputText id="email" name="email" type="text" className="p-3 input-text-lg w-full" />
-          <label htmlFor="email">Email</label>
-        </span>
-        <span className="p-float-label my-5">
-          <InputText
-            id="password"
-            name="password"
-            type="password"
-            className="p-3 input-text-lg w-full"
-          />
-          <label htmlFor="password">Password</label>
-        </span>
-        <span className="p-float-label my-5">
-          <InputText
-            id="password"
-            name="password"
-            type="password"
-            className="p-3 input-text-lg w-full"
-          />
-          <label htmlFor="password">Confirm password</label>
-        </span>
-        <Button size="large" type="submit" className="mb-4">
-          Sign Up
-        </Button>
-      </form>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ handleSubmit }) => {
+          return (
+            <form onSubmit={handleSubmit} className="text-center w-full md:w-25rem">
+              <InputField name="email" type="email" label="Email" />
+              <InputField name="password" type="password" label="Password" />
+              <InputField name="repeatPassword" type="password" label="Confirm Password" />
+              <Button size="large" type="submit" className="mb-4">
+                Sign Up
+              </Button>
+            </form>
+          );
+        }}
+      </Formik>
     </div>
   );
 };
