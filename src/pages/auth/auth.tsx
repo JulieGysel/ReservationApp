@@ -23,25 +23,3 @@ export const RequireAuth = ({ children }: { children: JSX.Element }) => {
 
   return children;
 };
-
-export const AuthStatus = () => {
-  let auth = useAuth();
-  let navigate = useNavigate();
-
-  if (!auth.user) {
-    return <p className="text-center">You are not logged in.</p>;
-  }
-
-  return (
-    <p className="text-center">
-      Welcome {auth.user}!{' '}
-      <button
-        onClick={() => {
-          auth.signout(() => navigate('/'));
-        }}
-      >
-        Sign out
-      </button>
-    </p>
-  );
-};
