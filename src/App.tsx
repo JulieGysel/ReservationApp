@@ -11,7 +11,7 @@ import {
   ResourceList,
   SignUp,
 } from './pages';
-import { AuthProvider, AuthStatus, RequireAuth } from './pages/auth';
+import { AuthProvider, RequireAuth } from './pages/auth';
 import { Navbar } from './components';
 
 export default function App() {
@@ -23,11 +23,10 @@ export default function App() {
             <>
               <Navbar />
               <div className="flex justify-content-center">
-                <div className="w-full md:w-10 xl:w-9 bg-blue-100 p-2">
+                <div className="w-full md:w-10 xl:w-9 p-2">
                   <Outlet />
                 </div>
               </div>
-              <AuthStatus />
             </>
           }
         >
