@@ -19,6 +19,17 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route
+          path="reserve/:id"
+          element={
+            <>
+              <div className="flex flex-column h-screen">
+                <Navbar />
+                <CreateReservation />
+              </div>
+            </>
+          }
+        />
+        <Route
           element={
             <>
               <Navbar />
@@ -65,7 +76,7 @@ export default function App() {
               </RequireAuth>
             }
           />
-          <Route path="reserve/:id" element={<CreateReservation />} />
+          <Route path="resource" element={<CreateResource />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
