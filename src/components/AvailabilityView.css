@@ -1,0 +1,164 @@
+.availability-view {
+  --scrollbar-width: 10px;
+  --line-color: var(--surface-500);
+}
+
+.no-highlights {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.availability-view .area {
+  overflow-y: scroll;
+  max-height: 75svh;
+  border: 1px solid var(--line-color);
+}
+
+.availability-view .area .content {
+  position: relative;
+  touch-action: none;
+}
+
+div *::-webkit-scrollbar {
+  background: var(--surface-0);
+  width: var(--scrollbar-width);
+}
+
+div *::-webkit-scrollbar-thumb {
+  border-radius: var(--scrollbar-width);
+  background-color: var(--surface-300);
+  overflow-x: auto;
+}
+
+div *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--surface-400);
+}
+
+.handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 8px;
+  position: absolute;
+  background-color: var(--primary-color);
+  outline: 2px solid var(--surface-ground);
+  pointer-events: initial;
+  cursor: ns-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.availability-grid {
+  display: grid;
+  grid-template-columns: 4.5em 0.5em auto;
+}
+
+.availability-view .cell-top-corner {
+  border: 1px solid var(--line-color);
+  border-right: none;
+  border-bottom: none;
+}
+
+.availability-view .cell-top-gutter {
+  border-top: 1px solid var(--line-color);
+}
+
+.availability-view .cell-top-scroll-gutter {
+  border: 1px solid var(--line-color);
+  border-left: none;
+  border-bottom: none;
+  width: var(--scrollbar-width);
+}
+
+.availability-view .cell-day {
+  border: 1px solid var(--line-color);
+  border-right: none;
+  border-bottom: none;
+  text-align: center;
+  padding: 0.5em 0;
+  user-select: none;
+}
+
+.availability-view .cell-time {
+  margin-right: 5px;
+  text-align: end;
+  vertical-align: top;
+  font-size: 0.9em;
+  user-select: none;
+}
+
+.availability-view .cell-time-gutter {
+  width: 0.5em;
+  border-top: 1px solid var(--line-color);
+}
+
+.availability-view .cell {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.availability-view .cell .text {
+  padding: 2px;
+  z-index: 2;
+  position: absolute;
+  width: calc(100% - 5px);
+  height: 100%;
+  color: var(--primary-color-text);
+  white-space: break-space;
+  text-align: start;
+  font-size: 0.85em;
+  font-weight: bold;
+  user-select: none;
+  display: none;
+}
+
+.availability-view .cell {
+  pointer-events: none;
+}
+
+.availability-view .cell .frame {
+  position: absolute;
+  z-index: 1;
+  background-color: var(--primary-color);
+  width: calc(100% - 5px);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.availability-view .cell .ghost {
+  opacity: 0.5;
+}
+
+.availability-view .cell .horizontal-border {
+  z-index: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.availability-view .cell-hover-cursor {
+  font-size: 0.9em;
+  display: none;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.availability-view .cell-overlay-delete {
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+@media only screen and (min-width: 940px) {
+  .availability-view .cell-hover-cursor {
+    display: block;
+  }
+
+  .availability-view .cell .text {
+    display: block;
+  }
+}

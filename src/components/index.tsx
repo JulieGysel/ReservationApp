@@ -5,3 +5,4 @@ export * from './SelectButtonsField';
 export * from './CheckboxField';
 export * from './NumberField';
 export * from './CalendarField';
+export * from './AvailabilityView';
