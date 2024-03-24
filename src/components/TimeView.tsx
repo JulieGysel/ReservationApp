@@ -300,10 +300,16 @@ export function TimeView() {
   week.forEach((day, index) => {
     const headerClass = selectActive && selectX == index ? 'header selected' : 'header';
     dayHeaders.push(
-      <div className={headerClass}>
-        <div className="long-day">{day.toLocaleDateString('en-US', { weekday: 'long' })}</div>
-        <div className="short-day">{day.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-        <div className="day-number">{day.toLocaleDateString('en-US', { day: 'numeric' })}</div>
+      <div className={headerClass} key={`day-header-${index}`}>
+        <div className="long-day" key={`long-day-${index}`}>
+          {day.toLocaleDateString('en-US', { weekday: 'long' })}
+        </div>
+        <div className="short-day" key={`shgort-day-${index}`}>
+          {day.toLocaleDateString('en-US', { weekday: 'short' })}
+        </div>
+        <div className="day-number" key={`day-number-${index}`}>
+          {day.toLocaleDateString('en-US', { day: 'numeric' })}
+        </div>
       </div>,
     );
 
@@ -314,18 +320,21 @@ export function TimeView() {
       const isAvailable = hour >= 7 && hour < 21;
       const classes =
         'cell' + (isSelected ? ' selected' : '') + (isAvailable ? '' : ' not-available');
+
       columnCells.push(
-        <div className={classes}>
+        <div className={classes} key={`cell-${index}-${hour}`}>
           <div className="hour-label">{HourToTimeString(hour)}</div>
         </div>,
       );
     }
+
     dayColumns.push(
       <div
         className="day-column"
         onPointerDown={(e) => ColumnsPointerDown(e, day)}
         onPointerUp={(e) => ColumnsPointerUp(e, day)}
         onPointerMove={(e) => ColumnsPointerMove(e)}
+        key={`day-column-${index}`}
       >
         {columnCells}
       </div>,
@@ -334,7 +343,7 @@ export function TimeView() {
 
   for (let hour = 1; hour < 24; hour++) {
     hourTicks.push(
-      <div className="hour">
+      <div className="hour" key={`hour-${hour}`}>
         <div className="label">{HourToTimeString(hour)}</div>
       </div>,
     );
@@ -353,7 +362,7 @@ export function TimeView() {
       '--box-h': boxYend - boxYstart,
     } as React.CSSProperties;
     reservedBoxes.push(
-      <div className="reserved-box" style={reservedBoxStyles}>
+      <div className="reserved-box" style={reservedBoxStyles} key={`reserved-time-${index}`}>
         <div className="time">
           {DateToHoursMinutes(res.from)}-{DateToHoursMinutes(res.to)}
         </div>
