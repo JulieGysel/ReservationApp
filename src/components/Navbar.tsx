@@ -14,7 +14,7 @@ export const Navbar = () => {
       id: 'create',
       label: 'Create a Resource',
       icon: 'pi pi-plus',
-      command: () => navigate('create'),
+      command: () => navigate('/create'),
     };
 
     if (auth.user) {
@@ -23,22 +23,22 @@ export const Navbar = () => {
         {
           id: 'resourceList',
           label: 'My Resources',
-          command: () => navigate('resources'),
+          command: () => navigate('/resources'),
         },
         {
           id: 'reservationList',
           label: 'My Reservations',
-          command: () => navigate('reservations'),
+          command: () => navigate('/reservations'),
         },
         {
           id: 'profile',
           label: 'My Profile',
-          command: () => navigate('profile'),
+          command: () => navigate('/profile'),
           items: [
             {
               id: 'profile',
               label: 'My Profile',
-              command: () => navigate('profile'),
+              command: () => navigate('/profile'),
             },
             {
               id: 'logout',
@@ -54,12 +54,12 @@ export const Navbar = () => {
         {
           id: 'login',
           label: 'Log In',
-          command: () => navigate('login'),
+          command: () => navigate('/login'),
         },
         {
           id: 'signup',
           label: 'Sign Up',
-          command: () => navigate('signup'),
+          command: () => navigate('/signup'),
         },
       ];
     }
