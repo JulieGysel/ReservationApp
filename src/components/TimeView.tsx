@@ -431,9 +431,14 @@ export function TimeView() {
             <Button icon="pi pi-ellipsis-h" onClick={() => setIsConfirmOpen(true)} />
           </div>
           <div className={selectPopupClasses}>
-            <div className="header">
+            <div className="header flex align-items-center">
               <div className="title">Reservation</div>
-              <Button icon="pi pi-times" onClick={() => setIsConfirmOpen(false)} link />
+              <Button
+                icon="pi pi-times"
+                onClick={() => setIsConfirmOpen(false)}
+                text
+                severity={'secondary'}
+              />
             </div>
             <Divider />
             <div className="content">
