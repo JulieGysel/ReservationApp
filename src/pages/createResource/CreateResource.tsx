@@ -1,13 +1,10 @@
 import React from 'react';
 import '../../index.css';
-
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Formik, FormikValues } from 'formik';
 import { Button } from 'primereact/button';
 import { Panel } from 'primereact/panel';
 
-import { Card } from 'primereact/card';
-import { SelectButton } from 'primereact/selectbutton';
-import { PrimeIcons } from 'primereact/api';
 import {
   CalendarField,
   CheckboxField,
@@ -18,10 +15,21 @@ import {
   AvailabilityView,
 } from '../../components';
 import { resourceValidationSchema } from './validationSchemas';
+import { useAuth } from '../auth';
+import { Dialog } from 'primereact/dialog';
 
 export const CreateResource = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const [isDialogVisible, setDialogVisible] = React.useState(false);
+
   const handleSubmit = (values: FormikValues) => {
-    console.log(values);
+    if (user) {
+      console.log(values);
+    } else {
+      setDialogVisible(true);
+    }
   };
 
   const initialValues = {
@@ -44,7 +52,7 @@ export const CreateResource = () => {
     >
       <div className={'flex flex-column align-items-start'}>
         <Formik
-          initialValues={initialValues}
+          initialValues={location.state?.values || initialValues}
           onSubmit={handleSubmit}
           validationSchema={resourceValidationSchema}
         >
@@ -87,6 +95,33 @@ export const CreateResource = () => {
               >
                 <Button label="Create" type="submit" icon="pi pi-check" className="font-semibold" />
               </div>
+              <Dialog
+                header="Log in or sign up to continue"
+                visible={isDialogVisible}
+                onHide={() => setDialogVisible(false)}
+                draggable={false}
+                footer={
+                  <div className="flex justify-content-end gap-2">
+                    <Button
+                      onClick={() => {
+                        navigate('/signup', { state: { from: location, values } });
+                      }}
+                      outlined
+                    >
+                      Sign up
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        navigate('/login', { state: { from: location, values } });
+                      }}
+                    >
+                      Log in
+                    </Button>
+                  </div>
+                }
+              >
+                Only registered users can create resources.
+              </Dialog>
             </form>
           )}
         </Formik>

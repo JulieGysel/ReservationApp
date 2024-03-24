@@ -33,7 +33,6 @@ export const Navbar = () => {
         {
           id: 'profile',
           label: 'My Profile',
-          command: () => navigate('/profile'),
           items: [
             {
               id: 'profile',
