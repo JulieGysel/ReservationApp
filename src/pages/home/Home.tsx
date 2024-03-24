@@ -13,10 +13,10 @@ export const Home = () => {
         Sharing made easy {/* is this too on the nose? */}
       </h1>
       <p>Set up a resource. Send out a link. Manage the reservations.</p>
-      <Button raised size="large" onClick={() => navigate('create')}>
+      <Button raised size="large" onClick={() => navigate('/create')}>
         Share something
       </Button>
-      <Button text size="large" onClick={() => navigate('reserve/0')}>
+      <Button text size="large" onClick={() => navigate('/reserve/0')}>
         Resource reservation demo
       </Button>
       {/* </div> */}
