@@ -1,0 +1,465 @@
+.timeview {
+  display: flex;
+  flex-direction: column;
+  /* https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration */
+  --select-box-easing: cubic-bezier(0, 1, 0.5, 1);
+  --select-box-expand-duration: 150ms;
+  --select-box-appear-duration: 300ms;
+  --cell-height: 56px;
+  overflow-y: auto;
+}
+
+.timeview .headers {
+  display: flex;
+  flex-direction: row;
+}
+
+.timeview .headers .corner {
+  width: 58px;
+}
+.timeview .hour-labels {
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.timeview .hour-labels .dummy {
+  height: 100%;
+}
+
+.timeview .hour-ticks {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 10px;
+  gap: var(--cell-height);
+  padding-top: var(--cell-height);
+}
+
+.timeview .day-column .cell {
+  min-height: var(--cell-height);
+  max-height: var(--cell-height);
+  box-sizing: content-box;
+  user-select: none;
+}
+
+.timeview .day-column .cell.not-available {
+  background: #eef1f3;
+}
+
+.timeview .day-column .cell .hour-label {
+  color: transparent;
+  transition: color 50ms;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: calc(0.125rem + 4px) calc(0.25rem + 4px);
+  display: none;
+}
+
+.timeview .day-column .cell:hover .hour-label {
+  color: unset;
+}
+
+.timeview .day-column .cell.selected .hour-label {
+  color: transparent;
+}
+
+.timeview .day-columns {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  position: relative;
+  overflow: visible;
+  height: fit-content;
+}
+
+.timeview .day-columns .select-box {
+  pointer-events: none;
+  position: absolute;
+  left: calc(100% / 7 * var(--select-x));
+  top: calc(100% / 24 * var(--select-y));
+  right: calc(100% / 7 * (7 - var(--select-x) - var(--select-w)));
+  bottom: calc(100% / 24 * (24 - var(--select-y) - var(--select-h)));
+  border-radius: 8px;
+  border: 4px solid var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  transition:
+    /* top var(--select-box-expand-duration) var(--select-box-easing),
+    bottom var(--select-box-expand-duration) var(--select-box-easing), */
+    opacity var(--select-box-appear-duration) 60ms var(--select-box-easing),
+    scale var(--select-box-appear-duration) 60ms var(--select-box-easing);
+  opacity: 0;
+  scale: 0.25;
+}
+
+.timeview .day-columns.select-active .select-box {
+  opacity: 1;
+  scale: 1;
+}
+
+.timeview .day-columns .select-box .hour-range {
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.125rem 0.25rem;
+  display: none;
+}
+
+.timeview .day-columns .selected-time {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  position: absolute;
+  left: -14px;
+  transform: translateX(-100%) translateY(-50%);
+  background: var(--primary-color);
+  color: white;
+  box-sizing: border-box;
+  padding: 1px 4px;
+  border-radius: 6px;
+  transition:
+    /* top var(--select-box-expand-duration) var(--select-box-easing), */ opacity
+    var(--select-box-expand-duration) 60ms var(--select-box-easing);
+  opacity: 0;
+}
+
+.timeview .day-columns.select-active .selected-time {
+  opacity: 1;
+}
+
+.timeview .day-columns .selected-time.start {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  top: clamp(10px, max(10px, calc(100% / 24 * var(--select-y))), calc(100% - 10px));
+}
+
+.timeview .day-columns .selected-time.start::after {
+  content: '';
+  /* transition: height var(--select-box-expand-duration) var(--select-box-easing); */
+  display: block;
+  height: calc((1px + var(--cell-height)) * var(--select-h) - 8px);
+  width: calc(100%);
+  position: absolute;
+  left: 0px;
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+}
+
+.timeview .day-columns .selected-time.end {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  top: clamp(10px, calc(100% / 24 * (var(--select-y) + var(--select-h))), calc(100% - 10px));
+}
+
+.timeview .day-columns .select-box .handle {
+  width: 12px;
+  height: 12px;
+  border-radius: 8px;
+  position: absolute;
+  background-color: var(--primary-color);
+  outline: 2px solid var(--surface-ground);
+  pointer-events: initial;
+  cursor: ns-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.timeview .day-columns .select-box .handle.top {
+  top: -2px;
+  left: 12%;
+  transform: translateY(-50%);
+}
+
+.timeview .day-columns .select-box .handle.bottom {
+  bottom: -2px;
+  right: 12%;
+  transform: translateY(50%);
+}
+
+.timeview .day-column .cell:not(:last-child),
+.timeview .hour-ticks .hour,
+.timeview .headers .corner {
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.timeview .day-column .cell {
+  border-left: 1px solid var(--surface-border);
+}
+
+.timeview .headers .header,
+.timeview .headers .header-full {
+  flex-basis: 0;
+  flex-grow: 1;
+  text-align: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.timeview .headers .header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.timeview .headers .header .day-number {
+  margin-top: 4px;
+  display: inline-block;
+  font-size: 1.125rem;
+  padding: 0 10px 2px 10px;
+  border-radius: 999px;
+  transition:
+    color 150ms,
+    background 150ms;
+}
+
+.timeview .headers .header.selected .day-number {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.timeview .headers .long-day {
+  display: none;
+}
+
+.timeview .columns {
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+}
+
+.timeview .day-column {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.timeview .hour-ticks .hour {
+  position: relative;
+}
+
+.timeview .hour-ticks .hour .label {
+  position: absolute;
+  left: -8px;
+  transform: translateX(-100%) translateY(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeview .select-popup {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background-color: var(--surface-ground);
+  position: fixed;
+  top: 32px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  user-select: none;
+  pointer-events: none;
+  transition:
+    top var(--select-box-appear-duration) var(--select-box-easing),
+    opacity var(--select-box-appear-duration) 60ms var(--select-box-easing);
+}
+
+.timeview .select-popup.open {
+  opacity: 1;
+  user-select: unset;
+  pointer-events: unset;
+  top: 0;
+}
+
+.timeview .select-popup .header {
+  flex-grow: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.timeview .select-popup .header .title {
+  flex-grow: 1;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.timeview .select-popup .content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timeview .select-popup .content .flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeview .select-popup .content .flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.timeview .select-popup .content .flex-grow {
+  flex-grow: 1;
+}
+
+.timeview .select-popup .content .align-items-center {
+  align-items: center;
+}
+
+.timeview .select-popup .content .gap-16px {
+  gap: 16px;
+}
+
+.timeview .select-popup .content .expand {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeview .select-popup .footer {
+  flex-grow: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.timeview .confirm-open-button {
+  left: unset;
+  top: unset;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  margin: var(--button-margin);
+  box-sizing: border-box;
+  border-radius: 8px;
+  top: clamp(
+    calc(var(--scroll-y) + var(--button-height) / 2),
+    calc(100% / 24 * (var(--select-y-initial) + 0.5) - var(--button-margin)),
+    calc(var(--scroll-h) + var(--scroll-y) - var(--button-height) / 2 - var(--button-margin) * 2)
+  );
+  transition:
+    top var(--select-box-expand-duration) var(--select-box-easing),
+    opacity var(--select-box-appear-duration) 60ms var(--select-box-easing);
+  box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.25);
+  transform: translateY(-50%);
+  --button-height: 39px;
+  --button-margin: 16px;
+  opacity: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.timeview .select-active .confirm-open-button {
+  opacity: 1;
+  user-select: unset;
+  pointer-events: unset;
+}
+
+.timeview .confirm-open-button.open {
+  display: none;
+}
+
+.timeview .confirm-open-button.left {
+  right: calc(100% / 7 * (7 - var(--select-x)));
+}
+
+.timeview .confirm-open-button.right {
+  left: calc(100% / 7 * (var(--select-x) + 1));
+}
+
+.timeview .select-popup .time-select-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.timeview .reserved-box {
+  display: flex;
+  flex-direction: row;
+  padding: calc(0.25rem + 5px);
+  background-color: var(--surface-border);
+  position: absolute;
+  left: calc(100% / 7 * var(--box-x));
+  top: calc(100% / 24 * var(--box-y));
+  right: calc(100% / 7 * (7 - var(--box-x) - var(--box-w)));
+  bottom: calc(100% / 24 * (24 - var(--box-y) - var(--box-h)));
+}
+
+.timeview .reserved-box .time {
+  flex-grow: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: none;
+}
+
+@media only screen and (min-width: 940px) {
+  .timeview .day-column .cell .hour-label {
+    display: block;
+  }
+
+  .timeview .day-columns .select-box .hour-range {
+    display: block;
+  }
+
+  .timeview .select-popup {
+    left: unset;
+    top: unset;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    position: absolute;
+    width: 400px;
+    height: var(--popup-height);
+    margin: var(--popup-margin);
+    box-sizing: border-box;
+    border-radius: 8px;
+    top: clamp(
+      calc(var(--scroll-y) + var(--popup-height) / 2),
+      calc(100% / 24 * (var(--select-y-initial) + 0.5) - var(--popup-margin)),
+      calc(var(--scroll-h) + var(--scroll-y) - var(--popup-height) / 2 - var(--popup-margin) * 2)
+    );
+    transition:
+      top var(--select-box-expand-duration) var(--select-box-easing),
+      opacity var(--select-box-appear-duration) 60ms var(--select-box-easing);
+    box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%);
+    --popup-height: 450px;
+    --popup-margin: 16px;
+    opacity: 0;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .timeview .select-active .select-popup {
+    opacity: 1;
+    user-select: unset;
+    pointer-events: unset;
+  }
+
+  .timeview .select-popup.left {
+    right: calc(100% / 7 * (7 - var(--select-x)));
+  }
+
+  .timeview .select-popup.right {
+    left: calc(100% / 7 * (var(--select-x) + 1));
+  }
+
+  .timeview .confirm-open-button {
+    display: none !important;
+  }
+
+  .timeview .select-popup .header button {
+    display: none;
+  }
+
+  .timeview .headers .long-day {
+    display: block;
+  }
+  .timeview .headers .short-day {
+    display: none;
+  }
+
+  .timeview .reserved-box .time {
+    display: block;
+  }
+}

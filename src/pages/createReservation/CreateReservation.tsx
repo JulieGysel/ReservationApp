@@ -1,5 +1,6 @@
 import React from 'react';
+import { TimeView } from '../../components/TimeView';
 
 export const CreateReservation = () => {
-  return <h2>Create Reservation</h2>;
+  return <TimeView />;
 };
