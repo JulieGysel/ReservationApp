@@ -17,7 +17,7 @@ export const SignUp = () => {
 
   const handleSubmit = (values: FormikValues) => {
     auth.signin(values.email, () => {
-      values.email && navigate(from, { replace: true });
+      values.email && navigate(from, { replace: true, state: location.state });
     });
   };
 

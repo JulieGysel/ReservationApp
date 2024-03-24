@@ -58,14 +58,7 @@ export default function App() {
               </RequireAuth>
             }
           />
-          <Route
-            path="create"
-            element={
-              <RequireAuth>
-                <CreateResource />
-              </RequireAuth>
-            }
-          />
+          <Route path="create" element={<CreateResource />} />
           <Route path="resource" element={<CreateResource />} />
           <Route path="*" element={<NotFound />} />
         </Route>
