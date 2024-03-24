@@ -33,7 +33,7 @@ export const SignUp = () => {
             <form onSubmit={handleSubmit} className="w-full md:w-25rem">
               <InputField name="email" type="email" label="Email" required />
               <InputField name="password" type="password" label="Password" required />
-              <InputField name="repeatPassword" type="password" label="Confirm Password" required />
+              <InputField name="repeatPassword" type="password" label="Confirm password" required />
               <div className="text-center">
                 <Button size="large" type="submit" className="mb-4">
                   Sign Up
