@@ -1,6 +1,5 @@
 .availability-view {
   --scrollbar-width: 10px;
-  --line-color: var(--surface-500);
 }
 
 .no-highlights {
@@ -14,9 +13,15 @@
 }
 
 .availability-view .area {
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 75svh;
-  border: 1px solid var(--line-color);
+  border: 1px solid var(--surface-border);
+  border-left: none;
+  border-top: none;
+}
+
+.availability-view .day-column {
+  border-left: 1px solid var(--surface-border);
 }
 
 .availability-view .area .content {
@@ -54,46 +59,36 @@ div *::-webkit-scrollbar-thumb:hover {
 
 .availability-grid {
   display: grid;
-  grid-template-columns: 4.5em 0.5em auto;
-}
-
-.availability-view .cell-top-corner {
-  border: 1px solid var(--line-color);
-  border-right: none;
-  border-bottom: none;
-}
-
-.availability-view .cell-top-gutter {
-  border-top: 1px solid var(--line-color);
-}
-
-.availability-view .cell-top-scroll-gutter {
-  border: 1px solid var(--line-color);
-  border-left: none;
-  border-bottom: none;
-  width: var(--scrollbar-width);
+  grid-template-columns: 5em auto;
+  width: 100%;
 }
 
 .availability-view .cell-day {
-  border: 1px solid var(--line-color);
-  border-right: none;
-  border-bottom: none;
   text-align: center;
-  padding: 0.5em 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 1.5em 0;
   user-select: none;
+}
+
+.availability-view .cell-day .long-day {
+  display: none;
 }
 
 .availability-view .cell-time {
   margin-right: 5px;
   text-align: end;
   vertical-align: top;
-  font-size: 0.9em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   user-select: none;
 }
 
 .availability-view .cell-time-gutter {
   width: 0.5em;
-  border-top: 1px solid var(--line-color);
+  border-top: 1px solid var(--surface-border);
 }
 
 .availability-view .cell {
@@ -142,15 +137,66 @@ div *::-webkit-scrollbar-thumb:hover {
 }
 
 .availability-view .cell-hover-cursor {
-  font-size: 0.9em;
+  font-size: 0.75rem;
+  font-weight: 600;
   display: none;
   user-select: none;
   transition: opacity 0.2s ease;
 }
 
 .availability-view .cell-overlay-delete {
+  opacity: 0;
   user-select: none;
   transition: opacity 0.2s ease;
+}
+
+.availability-view .cell-overlay-delete .delete-icon {
+  position: relative;
+  background-color: var(--surface-300);
+  border-radius: var(--border-radius);
+  width: 2.5em;
+  height: 2.5em;
+  top: -1.25em;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1em;
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.16),
+    0 3px 6px rgba(0, 0, 0, 0.23);
+  transition: all 0.2s ease;
+}
+
+.availability-view .cell-overlay-delete .delete-icon:hover {
+  background-color: var(--red-400);
+}
+
+.availability-view .button-toolbar {
+  padding: 0.5em;
+  background-color: var(--surface-300);
+  border-color: var(--surface-300);
+  color: var(--text-color);
+}
+
+.availability-view .button-toolbar:hover {
+  background-color: var(--surface-400);
+}
+
+.availability-view .button-toolbar:focus {
+  box-shadow: none !important;
+}
+
+.availability-view .button-zoom {
+  border-radius: 0;
+}
+
+.availability-view .button-delete {
+  padding: 0 1.5em;
+}
+
+.availability-view .button-delete:hover {
+  background-color: var(--red-400);
 }
 
 @media only screen and (min-width: 940px) {
@@ -160,5 +206,15 @@ div *::-webkit-scrollbar-thumb:hover {
 
   .availability-view .cell .text {
     display: block;
+  }
+}
+
+@media only screen and (min-width: 1600px) {
+  .availability-view .cell-day .long-day {
+    display: block;
+  }
+
+  .availability-view .cell-day .short-day {
+    display: none;
   }
 }

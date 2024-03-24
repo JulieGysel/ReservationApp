@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../index.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Formik, FormikValues } from 'formik';
@@ -13,6 +13,8 @@ import {
   SelectButtonsField,
   TextAreaField,
   AvailabilityView,
+  TimeInputField,
+  NumberInputField,
 } from '../../components';
 import { resourceValidationSchema } from './validationSchemas';
 import { useAuth } from '../auth';
@@ -81,13 +83,19 @@ export const CreateResource = () => {
               ) : null}
 
               <Panel header="Reservation limits" toggleable>
-                <NumberField name={'capacity'} label={'Maximum capaxity'} min={1} />
-                <CalendarField name="timeslot" label="Timeslot length" />
-                <CalendarField name="maximumLength" label="Maximum reservation length" />
+                <NumberInputField name={'capacity'} label={'Maximum capacity'} min={1} />
+                <TimeInputField name="timeslot" label="Reservation timeslot length" />
+                <TimeInputField
+                  name="maximumLength"
+                  label="Maximum reservation length"
+                  checkbox={true}
+                  visible={false}
+                />
               </Panel>
               <div
                 className="flex w-full pb-4 pt-4"
                 style={{
+                  minWidth: '20rem',
                   justifyContent: 'center',
                   borderRadius: 'var(--border-radius)',
                   backgroundColor: 'var(--surface-card)',

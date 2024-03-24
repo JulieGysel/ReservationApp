@@ -35,7 +35,7 @@ export class Cell extends React.Component {
     this.state.borders = props['data-borders'];
 
     this.borderStyle =
-      '1px ' + (props['data-dotted'] === true ? 'dotted' : 'solid') + ' var(--line-color)';
+      '1px ' + (props['data-dotted'] === true ? 'dotted' : 'solid') + ' var(--surface-border)';
   }
 
   public modify(mode: EditMode) {
@@ -82,15 +82,16 @@ export class Cell extends React.Component {
 
   public render() {
     let style = {
-      width: this.width,
+      // width: this.width,
+      width: '100%',
       height: this.height,
       cursor: 'pointer',
-      borderLeft: this.state.borders[3] ? '1px solid var(--line-color)' : 'none',
+      // borderLeft: this.state.borders[3] ? '1px solid var(--line-color)' : 'none',
     };
     let borderUp = this.state.up ? '0px' : '5px';
     let borderDown = this.state.down ? '0px' : '5px';
 
-    // let border = '6px solid var(--primary-300)';
+    let border = '6px solid var(--primary-300)';
     let visible = this.state.enabled || this.state.hover;
     let ghost = this.state.ghost && !this.state.hover ? ' ghost' : '';
     return (
@@ -124,6 +125,7 @@ export class Cell extends React.Component {
           <div
             className={'frame' + ghost}
             style={{
+              // backgroundColor: 'transparent',
               // borderTop: this.state.up ? 'none' : border,
               // borderBottom: this.state.down ? 'none' : border,
               // borderLeft: border,
