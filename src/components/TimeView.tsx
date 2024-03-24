@@ -488,7 +488,7 @@ export function TimeView() {
               </div>
             </div>
             <Divider />
-            <div className="footer">
+            <div className="footer flex justify-content-right gap-2">
               <Button
                 onClick={() => {
                   setReservedTimes([...reservedTimes, new ReservedTime(selectStart, selectEnd)]);
@@ -497,6 +497,15 @@ export function TimeView() {
                 }}
               >
                 Reserve
+              </Button>
+              <Button
+                outlined
+                onClick={() => {
+                  setIsConfirmOpen(false);
+                  setSelectActive(false);
+                }}
+              >
+                Cancel
               </Button>
             </div>
           </div>
