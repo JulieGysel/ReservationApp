@@ -43,10 +43,12 @@ function dayTimeFraction(date: Date) {
 class ReservedTime {
   from: Date;
   to: Date;
+  owned: boolean;
 
-  constructor(start: Date, end: Date) {
+  constructor(start: Date, end: Date, owned: boolean) {
     this.from = start;
     this.to = end;
+    this.owned = owned
   }
 }
 
@@ -70,14 +72,17 @@ export function TimeView() {
     new ReservedTime(
       new Date(week[0].getTime() + 1000 * 60 * 60 * 9),
       new Date(week[0].getTime() + 1000 * 60 * 60 * 11),
+      true
     ),
     new ReservedTime(
       new Date(week[2].getTime() + 1000 * 60 * 60 * 16),
       new Date(week[2].getTime() + 1000 * 60 * 60 * 17),
+      false,
     ),
     new ReservedTime(
       new Date(week[5].getTime() + 1000 * 60 * 60 * 11),
       new Date(week[5].getTime() + 1000 * 60 * 60 * 14.5),
+      false,
     ),
   ]);
 
@@ -360,7 +365,9 @@ export function TimeView() {
       '--box-y': boxYstart,
       '--box-w': boxW,
       '--box-h': boxYend - boxYstart,
+      'background-color': res.owned ? "var(--blue-200)" : "var(--surface-border)",
     } as React.CSSProperties;
+
     reservedBoxes.push(
       <div className="reserved-box" style={reservedBoxStyles} key={`reserved-time-${index}`}>
         <div className="time">
@@ -385,13 +392,14 @@ export function TimeView() {
   } as React.CSSProperties;
 
   const dayColumnsClasses = selectActive ? 'day-columns select-active' : 'day-columns';
+  const isConfirmRight = selectX < Math.floor(7 / 2);
   const selectPopupClasses =
     'select-popup ' +
-    (selectX < Math.floor(7 / 2) ? 'right' : 'left') +
+    (isConfirmRight ? 'right' : 'left') +
     (isConfirmOpen ? ' open' : '');
   const confirmOpenButtonClasses =
     'confirm-open-button ' +
-    (selectX < Math.floor(7 / 2) ? 'right' : 'left') +
+    (isConfirmRight ? 'right' : 'left') +
     (isConfirmOpen ? ' open' : '');
   window.addEventListener('resize', ColumnsScrolled);
 
@@ -428,7 +436,14 @@ export function TimeView() {
             ></div>
           </div>
           <div className={confirmOpenButtonClasses}>
-            <Button icon="pi pi-ellipsis-h" onClick={() => setIsConfirmOpen(true)} />
+            <div className={`flex gap-3 ${isConfirmRight ? 'flex-row-reverse' : ''}`}>
+              <Button icon="pi pi-check" onClick={() => {
+                setReservedTimes([...reservedTimes, new ReservedTime(selectStart, selectEnd, true)]);
+                setIsConfirmOpen(false);
+                setSelectActive(false);
+              }} />
+              <Button icon="pi pi-ellipsis-h" onClick={() => setIsConfirmOpen(true)} />
+            </div>
           </div>
           <div className={selectPopupClasses}>
             <div className="header flex align-items-center">
@@ -491,7 +506,7 @@ export function TimeView() {
             <div className="footer flex justify-content-right gap-2">
               <Button
                 onClick={() => {
-                  setReservedTimes([...reservedTimes, new ReservedTime(selectStart, selectEnd)]);
+                  setReservedTimes([...reservedTimes, new ReservedTime(selectStart, selectEnd, true)]);
                   setIsConfirmOpen(false);
                   setSelectActive(false);
                 }}
