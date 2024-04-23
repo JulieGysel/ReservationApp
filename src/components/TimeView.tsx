@@ -10,6 +10,7 @@ import { Divider } from 'primereact/divider';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { Avatar } from 'primereact/avatar';
+import { Link } from 'react-router-dom';
 
 function getMonday(d: Date) {
   d = new Date(d.toDateString());
@@ -61,6 +62,8 @@ export function TimeView() {
   const [selectStart, setSelectStart] = useState(new Date());
   const [selectEnd, setSelectEnd] = useState(new Date());
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState(new ReservedTime(new Date(), new Date(), false));
   const [selectYInitial, setSelectYInitial] = useState(0);
   const [selectHInitial, setSelectHInitial] = useState(0);
   const [selectActive, setSelectActive] = useState(false);
@@ -85,6 +88,14 @@ export function TimeView() {
       false,
     ),
   ]);
+
+
+
+  const detailW = 1;
+  const detailX = week.findIndex((x) => datesAreOnSameDay(x, selectedReservation?.from));
+  const detailYstart = dayTimeFraction(selectedReservation?.from) * 24;
+  const detailYend =
+    dayTimeFraction(selectedReservation?.to) * 24 + (datesAreOnSameDay(selectedReservation?.from, selectedReservation?.to) ? 0 : 24);
 
   const selectW = 1;
   const selectX = week.findIndex((x) => datesAreOnSameDay(x, selectStart));
@@ -213,6 +224,7 @@ export function TimeView() {
   }
 
   function StartSelect(hour: number, day: Date) {
+    setIsDetailOpen(false);
     let selectStartDate = new Date(day);
     selectStartDate.setHours(hour);
     let selectEndDate = new Date(day);
@@ -297,6 +309,18 @@ export function TimeView() {
     InputMoved(GetPointerTime(e));
   }
 
+  function OpenReservationDetail(reservation: ReservedTime)
+  {
+    setSelectedReservation(reservation);
+    setSelectActive(false);
+    setIsDetailOpen(true);
+  }
+
+  function deleteOpenedDetail()
+  {
+    
+  }
+
   const dayHeaders: JSX.Element[] = [];
   const dayColumns: JSX.Element[] = [];
   const hourTicks: JSX.Element[] = [];
@@ -365,11 +389,11 @@ export function TimeView() {
       '--box-y': boxYstart,
       '--box-w': boxW,
       '--box-h': boxYend - boxYstart,
-      'background-color': res.owned ? "var(--blue-200)" : "var(--surface-border)",
+      'backgroundColor': res.owned ? "var(--blue-200)" : "var(--surface-border)",
     } as React.CSSProperties;
 
     reservedBoxes.push(
-      <div className="reserved-box" style={reservedBoxStyles} key={`reserved-time-${index}`}>
+      <div className="reserved-box" style={reservedBoxStyles} key={`reserved-time-${index}`} onClick={() => OpenReservationDetail(res)}>
         <div className="time">
           {DateToHoursMinutes(res.from)}-{DateToHoursMinutes(res.to)}
         </div>
@@ -382,6 +406,12 @@ export function TimeView() {
   });
 
   const styles = {
+    '--detail-y-initial': detailYstart,
+    '--detail-x': detailX,
+    '--detail-y': detailYstart,
+    '--detail-w': detailW,
+    '--detail-h': detailYend - detailYstart,
+
     '--select-y-initial': selectYInitial,
     '--select-x': selectX,
     '--select-y': selectYstart,
@@ -392,16 +422,23 @@ export function TimeView() {
   } as React.CSSProperties;
 
   const dayColumnsClasses = selectActive ? 'day-columns select-active' : 'day-columns';
-  const isConfirmRight = selectX < Math.floor(7 / 2);
+  const isSelectRight = selectX < Math.floor(7 / 2);
   const selectPopupClasses =
-    'select-popup ' +
-    (isConfirmRight ? 'right' : 'left') +
+    'select-popup popup ' +
+    (isSelectRight ? 'right' : 'left') +
     (isConfirmOpen ? ' open' : '');
   const confirmOpenButtonClasses =
     'confirm-open-button ' +
-    (isConfirmRight ? 'right' : 'left') +
+    (isSelectRight ? 'right' : 'left') +
     (isConfirmOpen ? ' open' : '');
   window.addEventListener('resize', ColumnsScrolled);
+  // selectedReservation
+  
+  const isDetailRight = detailX < Math.floor(7 / 2);
+  const detailPopupClasses =
+    'detail-popup popup ' +
+    (isDetailRight ? 'right' : 'left') +
+    (isDetailOpen ? ' open' : '');
 
   return (
     <div className="timeview">
@@ -436,13 +473,15 @@ export function TimeView() {
             ></div>
           </div>
           <div className={confirmOpenButtonClasses}>
-            <div className={`flex gap-3 ${isConfirmRight ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex gap-3 ${isSelectRight ? 'flex-row-reverse' : ''}`}>
               <Button icon="pi pi-check" onClick={() => {
                 setReservedTimes([...reservedTimes, new ReservedTime(selectStart, selectEnd, true)]);
                 setIsConfirmOpen(false);
                 setSelectActive(false);
               }} />
-              <Button icon="pi pi-ellipsis-h" onClick={() => setIsConfirmOpen(true)} />
+              <Button icon="pi pi-ellipsis-h" onClick={() => {
+                setIsConfirmOpen(true);
+                }} />
             </div>
           </div>
           <div className={selectPopupClasses}>
@@ -455,6 +494,7 @@ export function TimeView() {
                 severity={'secondary'}
               />
             </div>
+            
             <Divider />
             <div className="content">
               <div className="flex-row align-items-center">
@@ -522,6 +562,43 @@ export function TimeView() {
               >
                 Cancel
               </Button>
+            </div>
+          </div>
+          <div className={detailPopupClasses}>
+            <div className="header flex align-items-center">
+              <div className="title">Reservation detail</div>
+              <Button
+                icon="pi pi-times"
+                onClick={() => setIsDetailOpen(false)}
+                text
+                severity={'secondary'}
+              />
+            </div>
+            
+            <Divider />
+            <div className="content">
+              <div className="flex-row justify-content-between">
+                <div className="text-xl">
+                  Joe Smith
+                </div>
+                {selectedReservation.owned && (
+                // <Button  icon="pi pi-trash" className="p-button-rounded p-button-danger p-ml-2"  onClick={() => deleteOpenedDetail()} />
+                <Button text>Remove</Button>
+                )}
+            </div>
+              <div className="flex-row justify-content-between">
+                <div>
+                  {selectedReservation?.from.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} - {selectedReservation?.to.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                </div>
+                <div>
+                  {selectStart.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
