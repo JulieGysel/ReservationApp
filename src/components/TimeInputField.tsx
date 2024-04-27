@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 
 import { useField, useFormikContext } from 'formik';
 
-import { RoundButton, IconButtons, InputWithButtons } from '.';
+import { SvgRoundButton, SvgIcons, InputWithButtons } from '.';
 
 import { PrimeIcons } from 'primereact/api';
 
@@ -23,9 +23,11 @@ class PopupTimeColumn extends React.Component<PopupTimeColumnProps> {
   };
 
   keyStrokeTimeout: any;
+  ref: any;
 
   constructor(props: any) {
     super(props);
+    this.ref = React.createRef<HTMLDivElement>();
   }
 
   numberInput(digit: string) {
@@ -77,16 +79,15 @@ class PopupTimeColumn extends React.Component<PopupTimeColumnProps> {
           alignContent: 'center',
         }}
       >
-        {RoundButton({
-          path: IconButtons.arrowUp,
+        {SvgRoundButton({
+          path: SvgIcons.arrowUp,
           name: 'arrow-button',
           onClick: (e: { preventDefault: () => void }) => {
             this.increment();
-            e.preventDefault();
           },
         })}
         <div
-          tabIndex={0}
+          ref={this.ref}
           className="time-input-col no-highlights"
           onKeyDown={(e) => {
             switch (e.key) {
@@ -112,15 +113,19 @@ class PopupTimeColumn extends React.Component<PopupTimeColumnProps> {
             e.stopPropagation();
             e.preventDefault();
           }}
+          onMouseDown={(e) => {
+            this.ref.current?.focus();
+            e.stopPropagation();
+            e.preventDefault();
+          }}
         >
           {zeroPad(this.state.value, 2)}
         </div>
-        {RoundButton({
-          path: IconButtons.arrowDown,
+        {SvgRoundButton({
+          path: SvgIcons.arrowDown,
           name: 'arrow-button',
-          onClick: (e: { preventDefault: () => void }) => {
+          onClick: (e) => {
             this.decrement();
-            e.preventDefault();
           },
         })}
       </div>
@@ -134,6 +139,7 @@ type Props = {
   required?: boolean;
   checkbox?: boolean;
   visible?: boolean;
+  buttonsVisible?: boolean;
 };
 
 export const TimeInputField = ({
@@ -142,6 +148,7 @@ export const TimeInputField = ({
   checkbox = false,
   required = false,
   visible = true,
+  buttonsVisible = true,
 }: Props) => {
   let time = new Date('1 Jan 1970 00:30:00');
   const minuteStep = 15;
@@ -173,7 +180,19 @@ export const TimeInputField = ({
   }
 
   let popup = (
-    <div className="flex gap-3" style={{ fontSize: '1.4em', justifyContent: 'center' }}>
+    <div
+      className="flex gap-1"
+      style={{ fontSize: '1.4em', justifyContent: 'center' }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onClick={(e) => {
+        // ref.current?.focus();
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <PopupTimeColumn
         ref={refHours}
         min={0}
@@ -221,6 +240,7 @@ export const TimeInputField = ({
       label={label}
       checkbox={checkbox}
       visible={visible}
+      buttonsVisible={buttonsVisible}
       required={required}
       popup={popup}
       icon={PrimeIcons.CALENDAR}

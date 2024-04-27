@@ -11,7 +11,7 @@ export const CheckboxField = ({ name, label, required = false }: CheckboxFieldPr
   const [{ value }, , { setTouched, setValue }] = useField(name);
 
   return (
-    <div className="my-3">
+    <div className="mt-2">
       <Checkbox
         inputId={name}
         name={name}

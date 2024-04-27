@@ -15,6 +15,7 @@ type Props = {
   required?: boolean;
   checkbox?: boolean;
   visible?: boolean;
+  buttonsVisible?: boolean;
 };
 
 export const NumberInputField = ({
@@ -25,6 +26,7 @@ export const NumberInputField = ({
   checkbox = false,
   required = false,
   visible = true,
+  buttonsVisible = true,
 }: Props) => {
   let ref = useRef<InputWithButtons>();
 
@@ -72,7 +74,18 @@ export const NumberInputField = ({
   }
 
   let popup = (
-    <div className="flex gap-3" style={{ fontSize: '1.4em', justifyContent: 'center' }}>
+    <div
+      className="flex gap-1"
+      style={{ fontSize: '1.4em', justifyContent: 'center' }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <Slider
         value={value}
         style={{ width: '100%', margin: '0.5em 1em' }}
@@ -90,6 +103,7 @@ export const NumberInputField = ({
       label={label}
       checkbox={checkbox}
       visible={visible}
+      buttonsVisible={buttonsVisible}
       required={required}
       icon={PrimeIcons.SLIDERS_H}
       popup={popup}

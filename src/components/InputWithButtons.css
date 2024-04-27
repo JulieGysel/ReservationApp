@@ -2,34 +2,31 @@
   position: relative;
   top: 0;
   right: 0;
-  align-items: flex-start;
+  display: flex;
+  justify-content: flex-end;
+  width: min-content;
 }
 
 .input-field .button-area {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
   position: absolute;
   pointer-events: none;
+  margin-left: auto;
   top: 0;
-  right: auto;
-  width: 12.5em;
   height: 100%;
+  padding: 1px;
 }
 
 .input-field .button-area-arrows {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100%;
-  width: 2.4em;
   z-index: 1;
 }
 
 .input-field .p-trigger {
   height: 100%;
   border-radius: 0;
-  color: var(--surface-600);
-  background-color: transparent;
   border-color: transparent;
   z-index: 1;
 }
@@ -40,10 +37,11 @@
 
 .input-field .p-inputnumber-button {
   pointer-events: all;
-  height: 50%;
-  width: 100%;
+  height: 100%;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  font-size: 0.75em;
+  border-color: transparent;
   padding: auto;
 }
 

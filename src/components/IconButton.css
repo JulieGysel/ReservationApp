@@ -1,0 +1,12 @@
+.round-button {
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--text-color);
+  border: none;
+}
+
+.round-button:hover {
+  background-color: var(--surface-300);
+}
