@@ -20,22 +20,25 @@ const uid = new ShortUniqueId({ length: 10 });
 export const CreateResource = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [submitButtonText, setSubmitButtonText] = React.useState('Create');
+
+  const initialValues = React.useMemo(() => {
+    if (location.pathname.includes('resource')) {
+      setSubmitButtonText('Save changes');
+      return { ...location.state, capacity: 1, available: 'always' };
+    }
+    return {
+      name: '',
+      description: '',
+      capacity: 1,
+      available: 'always',
+    };
+  }, []);
 
   const handleSubmit = React.useCallback((values: FormikValues) => {
     const uuid = uid.randomUUID();
     navigate(`/reserve/${uuid}/share`, { state: values });
   }, []);
-
-  const initialValues = {
-    name: '',
-    description: '',
-    privacy: 'all',
-    anonymous: false,
-    capacity: 1,
-    timeslot: new Date('1 Jan 1970 00:30:00'),
-    maximumLength: new Date('1 Jan 1970 00:30:00'),
-    available: 'always',
-  };
 
   return (
     <div className="flex justify-content-center">
@@ -69,7 +72,12 @@ export const CreateResource = () => {
               {values.available === 'select' && <AvailabilityView></AvailabilityView>}
 
               <div className="w-full flex justify-content-center">
-                <Button label="Create" type="submit" icon="pi pi-check" className="font-semibold" />
+                <Button
+                  label={submitButtonText}
+                  type="submit"
+                  icon="pi pi-check"
+                  className="font-semibold"
+                />
               </div>
             </form>
           )}

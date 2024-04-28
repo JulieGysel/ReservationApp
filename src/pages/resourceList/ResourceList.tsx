@@ -1,17 +1,22 @@
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import React from 'react';
 import { Divider } from 'primereact/divider';
 import { DataView } from 'primereact/dataview';
 import { Button } from 'primereact/button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import ShortUniqueId from 'short-unique-id';
+
+const uid = new ShortUniqueId({ length: 10 });
 
 class ResourcePreview {
-  id: number;
+  id: string;
   name: string;
+  description: string;
 
-  constructor(name: string, id: number) {
+  constructor(name: string, description: string, id: string) {
     this.id = id;
     this.name = name;
+    this.description = description;
   }
 
   equals(other: ResourcePreview) {
@@ -19,63 +24,83 @@ class ResourcePreview {
   }
 }
 
-
 export const ResourceList = () => {
+  const navigate = useNavigate();
 
-  const openResource = (id: number) => {
+  const openResource = (item: ResourcePreview) => {
     // Later route to specific reserve
-    window.location.href = "http://localhost:5173/reserve/0";
+    navigate(`/reserve/${item.id}`, { state: item });
   };
-  
-  const copyLinkToResource = (id: number, event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    navigator.clipboard.writeText("http://localhost:5173/reserve/0");
-    event.stopPropagation()
+
+  const copyLinkToResource = (
+    id: string,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    navigator.clipboard.writeText(`http://localhost:5173/reserve/${id}`);
+    event.stopPropagation();
   };
-  
-  const editResource = (id: number, event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+
+  const editResource = (
+    item: ResourcePreview,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
     // Later route to edit
-    window.location.href = "http://localhost:5173/create";
-    event.stopPropagation()
+    navigate(`/resource/${item.id}`, { state: item });
+    event.stopPropagation();
   };
-  
-  const deleteResource = (id: number, event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    setResourcesMockData(prevResources =>
-      prevResources.filter(resource => resource.id !== id)
-    );
-    event.stopPropagation()
+
+  const deleteResource = (id: string, event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setResourcesMockData((prevResources) => prevResources.filter((resource) => resource.id !== id));
+    event.stopPropagation();
   };
 
   const itemTemplate = (item: ResourcePreview) => {
     return (
-  <div className="flex flex-row align-items-center justify-content-between p-3 mb-2 border-round-lg shadow-3 cursor-pointer" onClick={() => openResource(item.id)} >
-    <div className="flex" >
-      <div className="mr-0 md:mr-8">
-        <span className="block text-900 text-lg font-semibold mb-1">{item.name}</span>
+      <div
+        className="flex flex-row align-items-center justify-content-between p-3 mb-2 border-round-lg shadow-3 cursor-pointer"
+        onClick={() => openResource(item)}
+        key={`resource-${item.id}`}
+      >
+        <div className="flex">
+          <div className="mr-0 md:mr-8">
+            <span className="block text-900 text-lg font-semibold mb-1">{item.name}</span>
+          </div>
+        </div>
+        <div className="mt-0 flex flex-nowrap">
+          <Button
+            className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only"
+            onClick={(e) => copyLinkToResource(item.id, e)}
+            icon="pi pi-link"
+          ></Button>
+          <Button
+            className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only"
+            onClick={(e) => editResource(item, e)}
+            icon="pi pi-pencil"
+          ></Button>
+          <Button
+            className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only"
+            onClick={(e) => deleteResource(item.id, e)}
+            icon="pi pi-trash"
+          ></Button>
+        </div>
       </div>
-    </div>
-    <div className="mt-0 flex flex-nowrap">
-        <Button className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only" onClick={(e) => copyLinkToResource(item.id, e)} icon="pi pi-link"></Button>
-        <Button className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only" onClick={(e) => editResource(item.id, e)} icon="pi pi-pencil"></Button>
-        <Button className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only" onClick={(e) => deleteResource(item.id, e)} icon="pi pi-trash"></Button>
-      </div> 
-  </div>);
+    );
   };
 
   const [resourcesMockData, setResourcesMockData] = useState([
-    new ResourcePreview('Robolab O105', 0),
-    new ResourcePreview('3D tiskárna', 1),
-    new ResourcePreview('Posilovna v práci', 2),
+    new ResourcePreview('Robolab O105', 'dfgh f', uid.randomUUID()),
+    new ResourcePreview('3D tiskárna', 'dfgh dfg', uid.randomUUID()),
+    new ResourcePreview('Posilovna v práci', 'fgh fg', uid.randomUUID()),
   ]);
 
   return (
     <>
       <h2>Resource List</h2>
       <Divider />
-      <DataView 
+      <DataView
         value={resourcesMockData}
         listTemplate={(items: ResourcePreview[]) => items.map(itemTemplate)}
       />
     </>
   );
 };
-
