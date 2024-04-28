@@ -1,15 +1,17 @@
 import React from 'react';
 import { TimeView } from '../../components/TimeView';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { PrimeIcons } from 'primereact/api';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { Toast } from 'primereact/toast';
 
 export const CreateReservation = () => {
-  const [shareVisible, setShareVisible] = React.useState(false);
+  const toastRef = React.useRef<Toast>(null);
+
   const location = useLocation();
-  const navigate = useNavigate();
+  const [shareVisible, setShareVisible] = React.useState(false);
   const path = location.pathname.includes('share')
     ? location.pathname.split('/').slice(0, -1).join('/')
     : location.pathname;
@@ -56,6 +58,11 @@ export const CreateReservation = () => {
               icon={'pi pi-clipboard'}
               onClick={() => {
                 navigator.clipboard.writeText('http://localhost:5173' + path);
+                toastRef.current?.show({
+                  severity: 'success',
+                  summary: 'Copied to clipboard',
+                  detail: `Link to ${state?.name} copied to clipboard.`,
+                });
                 toggleShare();
               }}
             />
@@ -67,6 +74,7 @@ export const CreateReservation = () => {
           </small>
         </div>
       </Dialog>
+      <Toast ref={toastRef} position="bottom-right" />
     </>
   );
 };
