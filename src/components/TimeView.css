@@ -244,13 +244,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.timeview .select-popup {
+.timeview .popup {
   display: flex;
   flex-direction: column;
   padding: 1rem;
   background-color: var(--surface-ground);
   position: fixed;
-  top: 32px;
+  top: 0;
   left: 0;
   width: 100%;
   height: 100%;
@@ -260,63 +260,62 @@
   transition:
     top var(--select-box-appear-duration) var(--select-box-easing),
     opacity var(--select-box-appear-duration) 60ms var(--select-box-easing);
-}
+  }
 
-.timeview .select-popup.open {
+.timeview .popup.open {
   opacity: 1;
   user-select: unset;
   pointer-events: unset;
-  top: 0;
 }
 
-.timeview .select-popup .header {
+.timeview .popup .header {
   flex-grow: 0;
   flex-shrink: 0;
   display: flex;
   flex-direction: row;
 }
 
-.timeview .select-popup .header .title {
+.timeview .popup .header .title {
   flex-grow: 1;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.timeview .select-popup .content {
+.timeview .popup .content {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.timeview .select-popup .content .flex-col {
+.timeview .popup .content .flex-col {
   display: flex;
   flex-direction: column;
 }
 
-.timeview .select-popup .content .flex-row {
+.timeview .popup .content .flex-row {
   display: flex;
   flex-direction: row;
 }
 
-.timeview .select-popup .content .flex-grow {
+.timeview .popup .content .flex-grow {
   flex-grow: 1;
 }
 
-.timeview .select-popup .content .align-items-center {
+.timeview .popup .content .align-items-center {
   align-items: center;
 }
 
-.timeview .select-popup .content .gap-16px {
+.timeview .popup .content .gap-16px {
   gap: 16px;
 }
 
-.timeview .select-popup .content .expand {
+.timeview .popup .content .expand {
   display: flex;
   flex-direction: column;
 }
 
-.timeview .select-popup .footer {
+.timeview .popup .footer {
   flex-grow: 0;
   flex-shrink: 0;
   display: flex;
@@ -340,13 +339,14 @@
   transition:
     top var(--select-box-expand-duration) var(--select-box-easing),
     opacity var(--select-box-appear-duration) 60ms var(--select-box-easing);
-  box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.25);
+  /* box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.25); */
   transform: translateY(-50%);
   --button-height: 39px;
   --button-margin: 16px;
   opacity: 0;
   user-select: none;
   pointer-events: none;
+  /* background-color: transparent; */
 }
 
 .timeview .select-active .confirm-open-button {
@@ -367,7 +367,7 @@
   left: calc(100% / 7 * (var(--select-x) + 1));
 }
 
-.timeview .select-popup .time-select-row {
+.timeview .popup .time-select-row {
   display: flex;
   gap: 16px;
   align-items: center;
@@ -377,7 +377,7 @@
   display: flex;
   flex-direction: row;
   padding: calc(0.25rem + 5px);
-  background-color: var(--surface-border);
+  /* background-color: var(--surface-border); */
   position: absolute;
   left: calc(100% / 7 * var(--box-x));
   top: calc(100% / 24 * var(--box-y));
@@ -448,8 +448,52 @@
     display: none !important;
   }
 
-  .timeview .select-popup .header button {
+  .timeview .popup .header button {
     display: none;
+  }
+
+  .timeview .detail-popup.open
+  {
+    opacity: 1;
+    user-select: unset;
+    pointer-events: unset;
+  }
+
+  .timeview .detail-popup {
+    left: unset;
+    top: unset;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    position: absolute;
+    width: 400px;
+    height: var(--popup-height);
+    margin: var(--popup-margin);
+    box-sizing: border-box;
+    border-radius: 8px;
+    top: clamp(
+      calc(var(--scroll-y) + var(--popup-height) / 2),
+      calc(100% / 24 * (var(--detail-y-initial) + 0.5) - var(--popup-margin)),
+      calc(var(--scroll-h) + var(--scroll-y) - var(--popup-height) / 2 - var(--popup-margin) * 2)
+    );
+    transition:
+      top var(--select-box-expand-duration) var(--select-box-easing),
+      opacity var(--select-box-appear-duration) 60ms var(--select-box-easing);
+    box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%);
+    --popup-height: 200px;
+    --popup-margin: 16px;
+    opacity: 0;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .timeview .detail-popup.left {
+    right: calc(100% / 7 * (7 - var(--detail-x)));
+  }
+
+  .timeview .detail-popup.right {
+    left: calc(100% / 7 * (var(--detail-x) + 1));
   }
 
   .timeview .headers .long-day {
