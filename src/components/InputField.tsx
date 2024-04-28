@@ -13,7 +13,7 @@ export const InputField = ({ name, label, type, required = false }: InputFieldPr
   const [{ value }, { error, touched }, { setTouched }] = useField(name);
 
   return (
-    <div className="my-3">
+    <div className="mt-2">
       <label htmlFor={name}>
         {label}
         {required && '*'}

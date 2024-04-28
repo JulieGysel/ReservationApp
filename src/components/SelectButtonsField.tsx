@@ -17,7 +17,7 @@ export const SelectButtonsField = ({
   const [{ value }, , { setTouched, setValue }] = useField(name);
 
   return (
-    <div className="my-3">
+    <div className="my-2">
       <label htmlFor={name}>
         {label}
         {required && '*'}
@@ -25,7 +25,7 @@ export const SelectButtonsField = ({
       <SelectButton
         id={name}
         name={name}
-        className={'py-3 w-full'}
+        className={'py-1 w-full'}
         value={value}
         onChange={(e) => setValue(e.value)}
         onBlur={() => setTouched(true)}

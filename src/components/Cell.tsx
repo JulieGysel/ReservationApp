@@ -10,7 +10,6 @@ export class Cell extends React.Component {
   state = {
     enabled: false,
     hover: false,
-    ghost: false,
     up: false,
     down: false,
     text: '',
@@ -20,7 +19,7 @@ export class Cell extends React.Component {
 
   hover = false;
   enabled = false;
-  ghost = false;
+
   width = '';
   height = '';
   borderStyle = '';
@@ -35,7 +34,7 @@ export class Cell extends React.Component {
     this.state.borders = props['data-borders'];
 
     this.borderStyle =
-      '1px ' + (props['data-dotted'] === true ? 'dotted' : 'solid') + ' var(--line-color)';
+      '1px ' + (props['data-dotted'] === true ? 'dotted' : 'solid') + ' var(--surface-border)';
   }
 
   public modify(mode: EditMode) {
@@ -66,33 +65,27 @@ export class Cell extends React.Component {
     this.setState({ up: up, down: down });
   }
 
-  public setGhost(value: any) {
-    this.ghost = value;
-    this.setState({ ghost: value });
-  }
-
   public setHover(value: any) {
     this.hover = value;
     this.setState({ hover: value });
   }
 
   public isEnabled() {
-    return this.state.hover || (this.state.enabled && !this.state.ghost);
+    return this.state.hover || this.state.enabled;
   }
 
   public render() {
     let style = {
-      width: this.width,
+      // width: this.width,
+      width: '100%',
       height: this.height,
       cursor: 'pointer',
-      borderLeft: this.state.borders[3] ? '1px solid var(--line-color)' : 'none',
+      // borderLeft: this.state.borders[3] ? '1px solid var(--line-color)' : 'none',
     };
     let borderUp = this.state.up ? '0px' : '5px';
     let borderDown = this.state.down ? '0px' : '5px';
 
-    // let border = '6px solid var(--primary-300)';
     let visible = this.state.enabled || this.state.hover;
-    let ghost = this.state.ghost && !this.state.hover ? ' ghost' : '';
     return (
       <div className="cell no-highlights" style={style}>
         {this.state.isBottom && (
@@ -119,11 +112,21 @@ export class Cell extends React.Component {
             }}
           ></div>
         )} */}
-        <div className={'text' + ghost}>{this.state.text}</div>
-        {visible && (
+
+        {/* <div style={{ marginLeft: '5px' }}>
+          {(this.state.enabled ? 'E' : ' ') +
+            (this.state.hover ? 'H' : ' ') +
+            +this.state.text +
+            (this.state.up ? '1' : '0') +
+            (this.state.down ? '1' : '0')}
+        </div> */}
+
+        {/*<div className={'text' + ghost}>{this.state.text}</div>*/}
+        {false && visible && (
           <div
-            className={'frame' + ghost}
+            className={'frame'}
             style={{
+              // backgroundColor: 'transparent',
               // borderTop: this.state.up ? 'none' : border,
               // borderBottom: this.state.down ? 'none' : border,
               // borderLeft: border,

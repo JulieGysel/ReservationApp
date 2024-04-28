@@ -7,6 +7,10 @@ import { EditMode, Cell } from './Cell';
 import { Button } from 'primereact/button';
 import { PrimeIcons } from 'primereact/api';
 
+import { OverlayPanel } from 'primereact/overlaypanel';
+
+import { TimeInputField, SvgRoundButton, SvgIcons } from '.';
+
 function toPercent(value: number) {
   return (100.0 * value).toString() + '%';
 }
@@ -35,6 +39,7 @@ class RelativeCell extends React.Component<React.PropsWithChildren<{ className?:
     visible: true,
   };
 
+  flag = true;
   className = '';
   group = { start: 0, end: -1, x: -1 };
 
@@ -42,15 +47,33 @@ class RelativeCell extends React.Component<React.PropsWithChildren<{ className?:
     super(props);
     this.className = props.className || '';
 
+    this.state.x = props['data-x'];
+    this.state.y = props['data-y'];
     this.state.width = props['data-width'];
     this.state.height = props['data-height'];
     this.state.zIndex = props['data-z-index'];
+
+    if (props['data-group']) {
+      this.group = props['data-group'];
+    }
+  }
+
+  public useTop(enabled: boolean) {
+    this.setState({
+      useTop: enabled,
+    });
   }
 
   public setPos(x: string, y: string) {
     this.setState({
       x: x,
       y: y,
+    });
+  }
+
+  public setHeight(h: string) {
+    this.setState({
+      height: h,
     });
   }
 
@@ -80,13 +103,20 @@ class RelativeCell extends React.Component<React.PropsWithChildren<{ className?:
   }
 }
 
+class Region extends RelativeCell {
+  constructor(props: any) {
+    super(props);
+  }
+}
+
 export class AvailabilityView extends React.Component {
-  cellSplit = 2;
+  cellSplit = 4;
   hours = 24;
   cols = 7;
   rows = this.hours * this.cellSplit;
 
   cells: any;
+  columns: any;
 
   element = React.createRef<HTMLDivElement>();
   hoverOverlay = React.createRef<RelativeCell>();
@@ -94,10 +124,12 @@ export class AvailabilityView extends React.Component {
 
   isMouseDown = false;
   minExtraHeight = 1.5;
+  defaultExtraHeight = 3.0;
 
   state = {
     hoverOverlayText: '',
-    extraHeight: this.minExtraHeight,
+    extraHeight: this.defaultExtraHeight,
+    columns: [],
   };
 
   startPos = new Point(0, 0);
@@ -105,9 +137,12 @@ export class AvailabilityView extends React.Component {
   currentGroup = { start: 0, end: -1, x: -1 };
   movingGroupStart = false;
   movingGroup = false;
+  movingGroupPos = new Point(0, 0);
   movingAnchor = 0;
   adjustGroupStart = false;
-  adjustGroup = false;
+  adjustGroupDirection = 0;
+  adjustGroupUp = false;
+  adjustGroupDown = false;
 
   region = { sx: 0, sy: 0, ex: -1, ey: -1 };
 
@@ -115,9 +150,16 @@ export class AvailabilityView extends React.Component {
 
   editMode = EditMode.Set;
 
+  counter = 0;
+
+  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  day_refs: React.RefObject<OverlayPanel>[];
+
   constructor(props: {} | Readonly<{}>) {
     super(props);
     this.cells = [];
+    this.day_refs = [];
     for (let j = 0; j < this.rows; ++j) {
       for (let i = 0; i < this.cols; ++i) {
         const round = j % this.cellSplit == 0;
@@ -140,9 +182,57 @@ export class AvailabilityView extends React.Component {
       }
     }
 
+    for (let _ of this.days) {
+      this.day_refs.push(React.createRef<OverlayPanel>());
+    }
+
     this.hourLabels = [...Array(this.hours).keys()].map((i) =>
       this.indexToTime(i * this.cellSplit),
     );
+
+    this.columns = [];
+    for (let _d of this.days) {
+      this.columns.push([]);
+    }
+  }
+
+  makeRegionElement(moving: boolean, x: number, y: number, height: number) {
+    let ref = React.createRef<RelativeCell>();
+    const text = this.indexToTimeRange(y, y + height);
+    return {
+      ref: ref,
+      element: (
+        <Region
+          className={moving ? 'region moving' : 'region'}
+          ref={ref}
+          key={this.counter + (moving ? 'M' : 'R') + '-' + x + '-' + y}
+          data-z-index={6}
+          data-width={'calc(' + toPercent(1.0 / this.cols) + ' - 5px)'}
+          data-height={toPercent(height / this.rows)}
+          data-x={toPercent(x / this.cols)}
+          data-y={toPercent(y / this.rows)}
+          data-group={{ start: y, end: y + height, x: x }}
+        >
+          {!moving && (
+            <div
+              className="handle top"
+              onMouseDown={() => {
+                this.startAdjustGroup(-1);
+              }}
+            ></div>
+          )}
+          <div className={'text' + (height < this.cellSplit ? ' smallCell' : '')}>{text}</div>
+          {!moving && (
+            <div
+              className="handle bottom"
+              onMouseDown={() => {
+                this.startAdjustGroup(1);
+              }}
+            ></div>
+          )}
+        </Region>
+      ),
+    };
   }
 
   componentDidMount(): void {
@@ -154,6 +244,7 @@ export class AvailabilityView extends React.Component {
       width: toPercent(1.0 / this.cols),
       height: toPercent(1.0 / this.rows),
     });
+    this.deleteOverlay.current?.setVisible(false);
   }
 
   get(x: number, y: number) {
@@ -240,13 +331,16 @@ export class AvailabilityView extends React.Component {
     const i1 = this.getIndex2D(this.startPos, rect);
     const i2 = this.getIndex2D(p, rect);
 
-    let cell = this.get(i2.x, i2.y);
     if (!this.isMouseDown) {
-      if (!cell.ref.current.enabled) {
-        this.hoverOverlay.current?.setPos(toPercent(i2.x / this.cols), toPercent(i2.y / this.rows));
+      let y = Math.floor(i2.y / this.cellSplit);
+      if (
+        !this.getCell(i2.x, i2.y).isEnabled() &&
+        !this.getCell(i2.x, y * this.cellSplit).isEnabled()
+      ) {
+        this.hoverOverlay.current?.setPos(toPercent(i2.x / this.cols), toPercent(y / this.hours));
         this.hoverOverlay.current?.setVisible(true);
         this.setState({
-          hoverOverlayText: this.indexToTime(i2.y),
+          hoverOverlayText: this.indexToTime(y * this.cellSplit),
         });
       } else {
         this.hoverOverlay.current?.setVisible(false);
@@ -260,10 +354,15 @@ export class AvailabilityView extends React.Component {
 
       let g = this.currentGroup;
       if (this.movingGroup) {
+        this.movingGroupPos.x = i2.x;
+        this.movingGroupPos.y = i2.y;
         start = i2;
         start.y = Math.max(0, start.y - this.movingAnchor);
         end = { x: start.x, y: Math.min(this.rows - 1, start.y + (g.end - g.start)) };
-      } else if (this.adjustGroup) {
+      } else if (this.adjustGroupUp) {
+        start.y = Math.min(g.end, i2.y);
+        end.y = g.end;
+      } else if (this.adjustGroupDown) {
         start.y = g.start;
         end.y = Math.max(start.y, i2.y);
       } else if (this.movingGroupStart) {
@@ -271,13 +370,17 @@ export class AvailabilityView extends React.Component {
         this.movingGroupStart = false;
         this.movingAnchor = i2.y - g.start;
         for (let y = g.start; y <= g.end; ++y) {
-          this.getCell(g.x, y).setGhost(true);
+          this.getCell(g.x, y).modify(EditMode.Clear);
         }
       } else if (this.adjustGroupStart) {
-        this.adjustGroup = true;
+        this.adjustGroupUp = this.adjustGroupDirection == -1;
+        this.adjustGroupDown = this.adjustGroupDirection == 1;
         this.adjustGroupStart = false;
         for (let y = g.start; y <= g.end; ++y) {
-          this.getCell(g.x, y).setGhost(true);
+          this.getCell(g.x, y).modify(EditMode.Clear);
+        }
+        for (let y = g.start; y <= g.end; ++y) {
+          this.getCell(g.x, y).setHover(true);
         }
       }
 
@@ -340,14 +443,13 @@ export class AvailabilityView extends React.Component {
     this.updateRegion(this.region);
 
     this.hoverOverlay.current?.setVisible(false);
+    this.deleteOverlay.current?.setVisible(false);
 
     this.currentGroup = c.group;
 
     if (c.ref.current.enabled) {
-      if (this.getSubIndexY(p.y, rect) != c.group.end * 2 + 1) {
+      if (!this.adjustGroupStart) {
         this.startMovingGroup();
-      } else {
-        this.startAdjustGroup();
       }
     } else {
       this.stopMovingGroup();
@@ -357,9 +459,11 @@ export class AvailabilityView extends React.Component {
     return true;
   }
 
-  startAdjustGroup() {
+  public startAdjustGroup(direction: number) {
     this.adjustGroupStart = true;
-    this.adjustGroup = false;
+    this.adjustGroupDirection = direction;
+    this.adjustGroupUp = false;
+    this.adjustGroupDown = false;
   }
 
   startMovingGroup() {
@@ -369,8 +473,9 @@ export class AvailabilityView extends React.Component {
 
   stopAdjustGroup(confirm = false) {
     this.adjustGroupStart = false;
-    if (this.adjustGroup) {
-      this.adjustGroup = false;
+    if (this.adjustGroupUp || this.adjustGroupDown) {
+      this.adjustGroupUp = false;
+      this.adjustGroupDown = false;
 
       let g = this.currentGroup;
       let x = g.x;
@@ -378,7 +483,6 @@ export class AvailabilityView extends React.Component {
         if (confirm) {
           this.getCell(x, y).modify(EditMode.Clear);
         }
-        this.getCell(x, y).setGhost(false);
       }
       if (confirm) {
         let r = this.region;
@@ -401,14 +505,15 @@ export class AvailabilityView extends React.Component {
         if (confirm) {
           this.getCell(x, y).modify(EditMode.Clear);
         }
-        this.getCell(x, y).setGhost(false);
       }
       if (confirm) {
         let r = this.region;
         let x = r.sx;
-        let end = Math.min(this.rows - 1, r.sy + (g.end - g.start));
-        for (let y = r.sy; y <= end; ++y) {
-          this.getCell(x, y).modify(EditMode.Set);
+        if (r.ex >= 0) {
+          let end = Math.min(this.rows - 1, r.sy + (g.end - g.start));
+          for (let y = r.sy; y <= end; ++y) {
+            this.getCell(x, y).modify(EditMode.Set);
+          }
         }
       }
 
@@ -435,7 +540,7 @@ export class AvailabilityView extends React.Component {
     this.onInputDown(new Point(t.clientX, t.clientY));
   }
 
-  onMouseLeave(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  onMouseLeave(event: any) {
     if (!this.isMouseDown) {
       this.clearHoverRegion();
     }
@@ -443,6 +548,12 @@ export class AvailabilityView extends React.Component {
     this.stopAdjustGroup();
     this.hoverOverlay.current?.setVisible(false);
     event.preventDefault();
+  }
+
+  onBlur(event: React.FocusEvent<HTMLDivElement, Element>) {
+    this.clearHoverRegion();
+    this.deleteOverlay.current?.setVisible(false);
+    this.onMouseLeave(event);
   }
 
   onMouseEnter(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -453,48 +564,54 @@ export class AvailabilityView extends React.Component {
     event.preventDefault();
   }
 
-  getNeigbourState(cell: any, neighbour: any) {
-    let s = [false, false];
+  getNeigbourState(neighbour: any) {
     if (neighbour) {
-      s[0] = neighbour.hover || neighbour.enabled;
-      if (cell.ghost) {
-        s[1] = cell.hover ? neighbour.hover : neighbour.ghost;
-      } else {
-        s[1] = s[0];
-      }
+      return neighbour.hover || neighbour.enabled;
     }
-    return s;
+    return false;
   }
 
   updateRegion(r: { sx: any; sy?: any; ex: any; ey?: any }) {
     for (let x = r.sx; x <= r.ex; ++x) {
+      this.columns[x] = [];
+    }
+    for (let x = r.sx; x <= r.ex; ++x) {
+      let regs = [];
+      if (this.movingGroup && this.currentGroup.x == x) {
+        let start = this.currentGroup.start;
+        let end = this.currentGroup.end;
+
+        regs.push(this.makeRegionElement(true, x, start, end - start + 1));
+      }
+
       let start = 0;
       let end = 0;
       for (let y = 0; y < this.rows; ++y) {
         let c = this.getCell(x, y);
         const current = c.enabled || c.hover;
-        let up = this.getNeigbourState(c, y > 0 ? this.getCell(x, y - 1) : null);
-        let down = this.getNeigbourState(c, y < this.rows - 1 ? this.getCell(x, y + 1) : null);
+        const up = this.getNeigbourState(y > 0 ? this.getCell(x, y - 1) : null);
+        const down = this.getNeigbourState(y < this.rows - 1 ? this.getCell(x, y + 1) : null);
 
-        c.setNeighbors(up[1], down[1]);
-        c.state.text = '';
-
-        if (current && !up[0]) {
+        c.setNeighbors(up, down);
+        if (current && !up) {
           start = y;
         }
-        if (current && !down[0]) {
+        if (current && !down) {
           end = y;
-          if (start < this.rows - this.cellSplit) {
-            this.getCell(x, start).state.text = this.indexToTimeRange(start, end + 1);
-          }
           for (let j = start; j <= end; ++j) {
             this.get(x, j).group = { start: start, end: end, x: x };
           }
+          regs.push(this.makeRegionElement(false, x, start, end - start + 1));
         } else {
           this.get(x, y).group = { start: y, end: y, x: x };
         }
       }
+
+      this.columns[x] = regs;
     }
+
+    this.forceUpdate();
+    this.counter++;
   }
 
   onInputUp(pos: Point) {
@@ -526,7 +643,7 @@ export class AvailabilityView extends React.Component {
       let o = this.deleteOverlay.current;
       if (enabled) {
         let g = o.group;
-        let visible = o.state.visible || false;
+        let visible = o.flag;
         if (
           g.start == this.currentGroup.start &&
           g.end == this.currentGroup.end &&
@@ -537,11 +654,15 @@ export class AvailabilityView extends React.Component {
           visible = true;
         }
 
-        o.setPos(
-          toPercent(this.currentGroup.x / this.cols),
-          toPercent(this.currentGroup.start / this.rows),
-        );
+        let x = toPercent((this.currentGroup.x + 1) / this.cols);
+        if (this.currentGroup.x > this.cols / 2) {
+          x = 'calc(' + toPercent(this.currentGroup.x / this.cols) + ' - 2.5em - 5px)';
+        }
+        let y = (this.currentGroup.start + this.currentGroup.end) / 2;
+
+        o.setPos(x, toPercent(y / this.rows));
         o.setVisible(visible);
+        o.flag = visible;
 
         o.group = this.currentGroup;
       }
@@ -560,6 +681,10 @@ export class AvailabilityView extends React.Component {
   }
 
   onDeleteClick() {
+    if (!this.deleteOverlay.current?.state.visible) {
+      return;
+    }
+
     let g = this.currentGroup;
     for (let y = g.start; y <= g.end; ++y) {
       this.getCell(g.x, y).clear();
@@ -569,9 +694,13 @@ export class AvailabilityView extends React.Component {
     return true;
   }
 
-  onScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {}
+  onScroll(_event: any) {
+    // this.setState({
+    //   scrollY: event.target.scrollTop / event.target.scrollHeight,
+    // });
+  }
 
-  onKeyUp(event: React.KeyboardEvent<HTMLDivElement>) {
+  onKeyUp(_event: React.KeyboardEvent<HTMLDivElement>) {
     // if (event.key === 'Escape') {
     //   const rect = this.getRect();
     //   const index = this.getIndex(this.currentPos, rect);
@@ -581,6 +710,12 @@ export class AvailabilityView extends React.Component {
     // }
   }
 
+  onZoomReset() {
+    this.setState({
+      extraHeight: this.defaultExtraHeight,
+    });
+  }
+
   onZoom(dir: number) {
     let value = Math.max(this.minExtraHeight, this.state.extraHeight + dir * 0.3);
     this.setState({
@@ -588,40 +723,174 @@ export class AvailabilityView extends React.Component {
     });
   }
 
+  modifyColumn(index: number, mode: EditMode) {
+    const r = { sx: index, ex: index, sy: 0, ey: this.rows - 1 };
+    for (let y = r.sy; y <= r.ey; ++y) {
+      for (let x = r.sx; x <= r.ex; ++x) {
+        let c = this.getCell(x, y);
+        c.modify(mode);
+      }
+    }
+    this.updateRegion(r);
+  }
+
+  fillColumn(index: number) {
+    this.modifyColumn(index, EditMode.Set);
+  }
+
+  clearColumn(index: number) {
+    this.modifyColumn(index, EditMode.Clear);
+  }
+
+  dayIsEmpty(index: number) {
+    return this.columns[index].length == 0;
+  }
+
+  dayIsFull(index: number) {
+    if (this.columns[index].length == 1) {
+      let r = this.columns[index][0];
+      let g = r.ref.current?.group;
+      if (g) {
+        return g.start == 0 && g.end == this.rows;
+      }
+    }
+    return false;
+  }
+
   onClear() {
     for (let c of this.cells) {
       c.ref.current.clear();
+      c.ref.current.setNeighbors(false, false);
     }
     this.deleteOverlay.current?.setVisible(false);
+    let columns = [];
+    for (let _d of this.days) {
+      columns.push([]);
+    }
+    this.columns = columns;
+    this.setState({
+      colums: this.columns,
+    });
   }
 
   public render() {
+    let template = '';
+    for (let i = 0; i < 7; ++i) {
+      template += toPercent(1.0 / this.cols) + ' ';
+    }
     return (
       <div className="availability-view">
-        <div className="availability-grid">
-          <div className="cell-top-corner"></div>
-          <div className="cell-top-gutter"></div>
-
-          <div className="flex">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => (
-              <div
-                className="cell-day"
-                key={'label-day-' + i.toString()}
-                style={{
-                  width: toPercent(1.0 / this.cols),
-                }}
-              >
-                {d}
-              </div>
-            ))}
-            <div className="cell-top-scroll-gutter"></div>
+        <div
+          className="availability-grid"
+          style={{ borderBottom: '1px solid var(--surface-border)' }}
+        >
+          <div style={{ width: '5em' }}></div>
+          <div
+            style={{
+              display: 'flex',
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                width: '100%',
+                gridTemplateColumns: template + 'auto',
+              }}
+            >
+              {this.days.map((d, i) => (
+                <div
+                  className={'cell-day'}
+                  key={'label-day-' + i.toString()}
+                  style={{
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    className="day-input-area"
+                    onClick={(e) => {
+                      this.day_refs[i].current?.toggle(e);
+                    }}
+                  >
+                    <div className="short-day">{d.substring(0, 3)}</div>
+                    <div className="long-day">{d}</div>
+                    <div className={`edit-icon pi ${PrimeIcons.PENCIL}`}></div>
+                  </div>
+                  <OverlayPanel ref={this.day_refs[i]}>
+                    <div className="flex pb-3" style={{ justifyContent: 'space-between' }}>
+                      <div>{d}</div>
+                      <SvgRoundButton
+                        path={SvgIcons.cross}
+                        name="close-button"
+                        onClick={() => {
+                          this.day_refs[i].current?.hide();
+                        }}
+                      ></SvgRoundButton>
+                    </div>
+                    <div className="mb-4">
+                      <Button
+                        className="button-secondary button-small mr-2"
+                        onClick={() => this.fillColumn(i)}
+                        disabled={this.dayIsFull(i)}
+                      >
+                        Set whole day
+                      </Button>
+                      <Button
+                        className="button-secondary button-small"
+                        onClick={() => this.clearColumn(i)}
+                        disabled={this.dayIsEmpty(i)}
+                      >
+                        Clear all
+                      </Button>
+                    </div>
+                    {this.columns[i].map((c, j) => {
+                      if (c.ref.current?.group) {
+                        let g = c.ref.current?.group;
+                        return (
+                          <div
+                            className="column-overlay-time my-2"
+                            key={'column' + i + '-time' + j}
+                          >
+                            <div className="text">{this.indexToTimeRange(g.start, g.end)}</div>
+                            <Button
+                              onClick={() => {
+                                const r = { sx: g.x, ex: g.x, sy: g.start, ey: g.end };
+                                console.log(r);
+                                for (let y = r.sy; y <= r.ey; ++y) {
+                                  for (let x = r.sx; x <= r.ex; ++x) {
+                                    let c = this.getCell(x, y);
+                                    c.modify(EditMode.Clear);
+                                  }
+                                }
+                                this.updateRegion(r);
+                              }}
+                              className={`pi button-secondary button-small icon-no-label ${PrimeIcons.TRASH}`}
+                            ></Button>
+                          </div>
+                        );
+                      }
+                    })}
+                    {false && (
+                      <div className="flex day-time-input mt-2">
+                        <div className="mr-2">
+                          <TimeInputField name="time-from" label="From" buttonsVisible={false} />
+                        </div>
+                        <div className="mr-2">
+                          <TimeInputField name="time-to" label="To" buttonsVisible={false} />
+                        </div>
+                      </div>
+                    )}
+                  </OverlayPanel>
+                </div>
+              ))}
+            </div>
+            <div style={{ width: 'var(--scrollbar-width)' }}></div>
           </div>
         </div>
-        <div className="area" onScroll={(e) => this.onScroll(e)}>
-          <div className="availability-grid">
+        <div className="availability-grid area" onScroll={(e) => this.onScroll(e)}>
+          <div className="flex h-full w-full">
             <div
               className="flex-col h-full items-center"
-              style={{ top: '-0.5em', position: 'relative' }}
+              style={{ top: '-0.5em', position: 'relative', width: '100%' }}
             >
               {this.hourLabels.map((d, i) => (
                 <div
@@ -648,87 +917,108 @@ export class AvailabilityView extends React.Component {
                 ></div>
               ))}
             </div>
-
+          </div>
+          <div
+            ref={this.element}
+            className="content flex flex-wrap items-start"
+            onMouseMove={(e) => this.onMouseMove(e)}
+            onMouseDown={(e) => this.onMouseDown(e)}
+            onMouseUp={(e) => this.onMouseUp(e)}
+            onMouseLeave={(e) => this.onMouseLeave(e)}
+            onMouseEnter={(e) => this.onMouseEnter(e)}
+            onTouchStart={(e) => this.onTouchStart(e)}
+            onTouchEnd={(e) => this.onTouchEnd(e)}
+            onTouchMove={(e) => this.onTouchMove(e)}
+            onKeyUp={(e) => this.onKeyUp(e)}
+            onBlur={(e) => this.onBlur(e)}
+          >
             <div
-              ref={this.element}
-              className="content flex flex-wrap items-start"
-              onMouseMove={(e) => this.onMouseMove(e)}
-              onMouseDown={(e) => this.onMouseDown(e)}
-              onMouseUp={(e) => this.onMouseUp(e)}
-              onMouseLeave={(e) => this.onMouseLeave(e)}
-              onMouseEnter={(e) => this.onMouseEnter(e)}
-              onTouchStart={(e) => this.onTouchStart(e)}
-              onTouchEnd={(e) => this.onTouchEnd(e)}
-              onTouchMove={(e) => this.onTouchMove(e)}
-              onKeyUp={(e) => this.onKeyUp(e)}
+              style={{
+                display: 'grid',
+                width: '100%',
+                gridTemplateColumns: template,
+              }}
             >
-              {this.cells.map((d: { elem: any }) => d.elem)}
-              <RelativeCell className="cell-hover-cursor" data-z-index={0} ref={this.hoverOverlay}>
-                {this.state.hoverOverlayText}
-              </RelativeCell>
-
-              <RelativeCell
-                className="cell-overlay-delete"
-                ref={this.deleteOverlay}
-                data-z-index={8}
-              >
-                <div
-                  className={`pi ${PrimeIcons.TRASH}`}
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                  }}
-                  onMouseUp={(e) => {
-                    if (typeof window.ontouchstart != 'undefined' && e.type == 'mouseup') return;
-                    this.onDeleteClick();
-                    e.stopPropagation();
-                    e.preventDefault();
-                  }}
-                  onTouchStart={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onTouchEnd={(e) => {
-                    e.stopPropagation();
-                    this.onDeleteClick();
-                  }}
-                  onMouseMove={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                  }}
-                  style={{
-                    position: 'relative',
-                    backgroundColor: 'var(--surface-600)',
-                    borderRadius: '3px',
-                    width: '2em',
-                    height: '2em',
-                    top: '-2em',
-                    color: 'var(--primary-color-text)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontSize: '1em',
-                  }}
-                ></div>
-              </RelativeCell>
+              {[...Array(7).keys()].map((d) => {
+                let x = [];
+                for (let i = 0; i < this.rows; ++i) {
+                  x.push(this.get(d, i).elem);
+                }
+                return (
+                  <div key={'col-' + d.toString()} className="flex-col day-column">
+                    {x}
+                  </div>
+                );
+              })}
             </div>
+
+            {this.columns.map((c: any[]) => c.map((d: { element: any }) => d.element))}
+
+            <RelativeCell className="cell-hover-cursor" data-z-index={0} ref={this.hoverOverlay}>
+              {this.state.hoverOverlayText}
+            </RelativeCell>
+
+            <RelativeCell className="cell-overlay-delete" ref={this.deleteOverlay} data-z-index={8}>
+              <div
+                className={`delete-icon pi ${PrimeIcons.TRASH}`}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+                onMouseUp={(e) => {
+                  if (typeof window.ontouchstart != 'undefined' && e.type == 'mouseup') return;
+                  this.onDeleteClick();
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  this.onDeleteClick();
+                }}
+                onMouseEnter={() => {
+                  this.hoverOverlay.current?.setVisible(false);
+                }}
+                onMouseMove={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              ></div>
+            </RelativeCell>
           </div>
         </div>
 
-        <div className={'flex flex-end'} style={{ justifyContent: 'flex-end' }}>
-          <Button
-            onClick={() => this.onZoom(-1)}
-            severity="secondary"
-            className={`pi ${PrimeIcons.SEARCH_MINUS}`}
-          ></Button>
-          <Button
-            onClick={() => this.onZoom(1)}
-            severity="secondary"
-            className={`pi ${PrimeIcons.SEARCH_PLUS}`}
-          ></Button>
+        <div className={'flex flex-end p-2'} style={{ justifyContent: 'flex-end' }}>
           <Button
             onClick={() => this.onClear()}
             severity="secondary"
-            className={`pi ${PrimeIcons.TRASH}`}
+            className={`pi button-toolbar button-delete button-secondary icon-no-label ${PrimeIcons.TRASH}`}
+          ></Button>
+          <span className="p-1 h-full"></span>
+          <Button
+            onClick={() => this.onZoom(-1)}
+            style={{
+              borderTopLeftRadius: 'var(--border-radius)',
+              borderBottomLeftRadius: 'var(--border-radius)',
+            }}
+            severity="secondary"
+            className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.SEARCH_MINUS}`}
+          ></Button>
+          <Button
+            onClick={() => this.onZoomReset()}
+            severity="secondary"
+            className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.UNDO}`}
+          ></Button>
+          <Button
+            onClick={() => this.onZoom(1)}
+            style={{
+              borderTopRightRadius: 'var(--border-radius)',
+              borderBottomRightRadius: 'var(--border-radius)',
+            }}
+            severity="secondary"
+            className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.SEARCH_PLUS}`}
           ></Button>
         </div>
       </div>

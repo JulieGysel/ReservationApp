@@ -1,0 +1,41 @@
+.time-input-col {
+  pointer-events: all;
+  scrollbar-width: none;
+  height: auto;
+  padding: 0 0.25em;
+  height: 1.25em;
+  overflow: hidden;
+  touch-action: none;
+  display: flex;
+  flex-flow: column nowrap;
+  outline: none;
+}
+
+.time-input-col div {
+  overflow: hidden;
+  width: 100%;
+}
+
+.time-input-col span {
+  flex: none;
+  font-size: 1.2rem;
+  text-align: center;
+  justify-content: center;
+  scroll-snap-align: start;
+}
+
+.time-input-col div::-webkit-scrollbar {
+  display: none;
+}
+
+.time-input-col:hover {
+  background-color: var(--surface-300);
+}
+
+.time-input-col:focus {
+  border-bottom: 3px solid var(--primary-color);
+}
+
+.icon-no-label .p-button-label {
+  display: none !important;
+}
