@@ -5,6 +5,7 @@ import { DataView } from 'primereact/dataview';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 import ShortUniqueId from 'short-unique-id';
+import { Toast } from 'primereact/toast';
 
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -25,6 +26,7 @@ class ResourcePreview {
 }
 
 export const ResourceList = () => {
+  const toastRef = React.useRef<Toast>(null);
   const navigate = useNavigate();
 
   const openResource = (item: ResourcePreview) => {
@@ -33,10 +35,15 @@ export const ResourceList = () => {
   };
 
   const copyLinkToResource = (
-    id: string,
+    item: ResourcePreview,
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
-    navigator.clipboard.writeText(`http://localhost:5173/reserve/${id}`);
+    navigator.clipboard.writeText(`http://localhost:5173/reserve/${item.id}`);
+    toastRef.current?.show({
+      severity: 'success',
+      summary: 'Copied to clipboard',
+      detail: `Link to ${item.name} copied to clipboard.`,
+    });
     event.stopPropagation();
   };
 
@@ -69,7 +76,7 @@ export const ResourceList = () => {
         <div className="mt-0 flex flex-nowrap">
           <Button
             className="p-button p-button-text p-button-plain p-button-rounded mr-1 p-button-icon-only"
-            onClick={(e) => copyLinkToResource(item.id, e)}
+            onClick={(e) => copyLinkToResource(item, e)}
             icon="pi pi-link"
           ></Button>
           <Button
@@ -101,6 +108,7 @@ export const ResourceList = () => {
         value={resourcesMockData}
         listTemplate={(items: ResourcePreview[]) => items.map(itemTemplate)}
       />
+      <Toast ref={toastRef} position="bottom-right" />
     </>
   );
 };

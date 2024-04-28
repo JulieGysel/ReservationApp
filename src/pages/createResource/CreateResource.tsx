@@ -36,8 +36,16 @@ export const CreateResource = () => {
   }, []);
 
   const handleSubmit = React.useCallback((values: FormikValues) => {
-    const uuid = uid.randomUUID();
-    navigate(`/reserve/${uuid}/share`, { state: values });
+    if (location.pathname.includes('resource')) {
+      navigate(`/reserve/${location.state.id}`, {
+        state: values,
+      });
+    } else {
+      const uuid = uid.randomUUID();
+      navigate(`/reserve/${uuid}/share`, {
+        state: values,
+      });
+    }
   }, []);
 
   return (
