@@ -16,10 +16,6 @@ export const Home = () => {
       <Button raised size="large" onClick={() => navigate('/create')}>
         Share something
       </Button>
-      <Button text size="large" onClick={() => navigate('/reserve/0')}>
-        Resource reservation demo
-      </Button>
-      {/* </div> */}
     </div>
   );
 };

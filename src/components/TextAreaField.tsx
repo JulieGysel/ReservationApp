@@ -12,14 +12,11 @@ export const TextAreaField = ({ name, label, required = false }: TextAreaFieldPr
   const [{ value }, { error, touched }, { setTouched }] = useField(name);
 
   return (
-    <div className="mt-2">
-      <label htmlFor={name}>
-        {label}
-        {required && '*'}
-      </label>
+    <div className="my-3">
       <InputTextarea
         id={name}
         name={name}
+        placeholder={`${label}${required ? '*' : ''}`}
         className={`p-3 input-text-lg w-full ${touched && error && 'p-invalid'}`}
         value={value}
         onChange={handleChange}
