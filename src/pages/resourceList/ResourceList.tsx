@@ -95,9 +95,9 @@ export const ResourceList = () => {
   };
 
   const [resourcesMockData, setResourcesMockData] = useState([
-    new ResourcePreview('Robolab O105', 'dfgh f', uid.randomUUID()),
-    new ResourcePreview('3D tiskárna', 'dfgh dfg', uid.randomUUID()),
-    new ResourcePreview('Posilovna v práci', 'fgh fg', uid.randomUUID()),
+    new ResourcePreview('Robolab O105', 'Robotic Lab in O105.', uid.randomUUID()),
+    new ResourcePreview('3D Printer', '3D Printer in R109.', uid.randomUUID()),
+    new ResourcePreview('Office gym', 'The office gym on the first floor.', uid.randomUUID()),
   ]);
 
   return (
