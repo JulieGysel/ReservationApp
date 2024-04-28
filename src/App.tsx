@@ -19,6 +19,21 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route
+          path="reserve/:id/*"
+          element={
+            <>
+              <div className="flex flex-column h-screen">
+                <Navbar />
+                <div className="flex justify-content-center overflow-x-auto">
+                  <div className="w-full xl:w-9 p-2 overflow-x-auto" style={{ display: 'grid' }}>
+                    <CreateReservation />
+                  </div>
+                </div>
+              </div>
+            </>
+          }
+        />
+        <Route
           element={
             <>
               <Navbar />
@@ -30,7 +45,6 @@ export default function App() {
             </>
           }
         >
-          <Route path="reserve/:id/*" element={<CreateReservation />} />
           <Route index element={<Home />} />
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />
