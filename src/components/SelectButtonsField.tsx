@@ -1,5 +1,6 @@
 import { useField } from 'formik';
-import { SelectButton, SelectButtonProps } from 'primereact/selectbutton';
+import { SelectButton, SelectButtonChangeEvent, SelectButtonProps } from 'primereact/selectbutton';
+import React from 'react';
 
 type SelectButtonsFieldProps = {
   name: string;
@@ -16,8 +17,18 @@ export const SelectButtonsField = ({
 }: SelectButtonsFieldProps) => {
   const [{ value }, , { setTouched, setValue }] = useField(name);
 
+  const handleChange = React.useCallback(
+    (e: SelectButtonChangeEvent) => {
+      console.log(value, e.value);
+      if (e.value) {
+        setValue(e.value);
+      }
+    },
+    [value, setValue],
+  );
+
   return (
-    <div className="my-2">
+    <div className={`my-3`}>
       <label htmlFor={name}>
         {label}
         {required && '*'}
@@ -25,9 +36,9 @@ export const SelectButtonsField = ({
       <SelectButton
         id={name}
         name={name}
-        className={'py-1 w-full'}
+        className={'pt-2 w-full'}
         value={value}
-        onChange={(e) => setValue(e.value)}
+        onChange={handleChange}
         onBlur={() => setTouched(true)}
         required={required}
         options={options}

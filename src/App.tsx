@@ -30,7 +30,7 @@ export default function App() {
             </>
           }
         >
-          <Route path="reserve/:id" element={<CreateReservation />} />
+          <Route path="reserve/:id/*" element={<CreateReservation />} />
           <Route index element={<Home />} />
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />

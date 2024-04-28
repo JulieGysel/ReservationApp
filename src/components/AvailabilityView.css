@@ -2,7 +2,7 @@
   --scrollbar-width: 10px;
 }
 
-.button-secondary {
+/* .button-secondary {
   color: var(--text-color);
   background-color: var(--surface-200);
   border-color: var(--surface-200);
@@ -15,7 +15,7 @@
 
 .button-secondary:hover {
   background-color: var(--surface-300);
-}
+} */
 
 .no-highlights {
   -webkit-tap-highlight-color: transparent;
@@ -40,6 +40,7 @@
 }
 
 .availability-view .area .content {
+  cursor: pointer;
   position: relative;
   touch-action: none;
 }

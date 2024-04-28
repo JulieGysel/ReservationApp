@@ -989,37 +989,42 @@ export class AvailabilityView extends React.Component {
             </RelativeCell>
           </div>
         </div>
-
-        <div className={'flex flex-end p-2'} style={{ justifyContent: 'flex-end' }}>
+        <div className={'flex justify-content-end mt-2 gap-2'}>
           <Button
             onClick={() => this.onClear()}
-            severity="secondary"
-            className={`pi button-toolbar button-delete button-secondary icon-no-label ${PrimeIcons.TRASH}`}
+            severity="danger"
+            icon={PrimeIcons.TRASH}
+            label={'Clear times'}
+            type="button"
           ></Button>
-          <span className="p-1 h-full"></span>
-          <Button
-            onClick={() => this.onZoom(-1)}
-            style={{
-              borderTopLeftRadius: 'var(--border-radius)',
-              borderBottomLeftRadius: 'var(--border-radius)',
-            }}
-            severity="secondary"
-            className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.SEARCH_MINUS}`}
-          ></Button>
-          <Button
-            onClick={() => this.onZoomReset()}
-            severity="secondary"
-            className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.UNDO}`}
-          ></Button>
-          <Button
-            onClick={() => this.onZoom(1)}
-            style={{
-              borderTopRightRadius: 'var(--border-radius)',
-              borderBottomRightRadius: 'var(--border-radius)',
-            }}
-            severity="secondary"
-            className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.SEARCH_PLUS}`}
-          ></Button>
+          <div>
+            <Button
+              onClick={() => this.onZoom(-1)}
+              style={{
+                borderTopLeftRadius: 'var(--border-radius)',
+                borderBottomLeftRadius: 'var(--border-radius)',
+              }}
+              severity="secondary"
+              className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.SEARCH_MINUS}`}
+              type="button"
+            ></Button>
+            <Button
+              onClick={() => this.onZoomReset()}
+              severity="secondary"
+              className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.UNDO}`}
+              type="button"
+            ></Button>
+            <Button
+              onClick={() => this.onZoom(1)}
+              style={{
+                borderTopRightRadius: 'var(--border-radius)',
+                borderBottomRightRadius: 'var(--border-radius)',
+              }}
+              severity="secondary"
+              className={`pi button-toolbar button-zoom button-secondary icon-no-label ${PrimeIcons.SEARCH_PLUS}`}
+              type="button"
+            ></Button>
+          </div>
         </div>
       </div>
     );
