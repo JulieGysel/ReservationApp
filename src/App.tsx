@@ -59,7 +59,7 @@ export default function App() {
             }
           />
           <Route path="create" element={<CreateResource />} />
-          <Route path="resource" element={<CreateResource />} />
+          <Route path="resource/:id" element={<CreateResource />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

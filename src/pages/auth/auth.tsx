@@ -1,15 +1,15 @@
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './authContext';
 
 export const fakeAuthProvider = {
   isAuthenticated: false,
   signin(callback: VoidFunction) {
     fakeAuthProvider.isAuthenticated = true;
-    setTimeout(callback, 100);
+    callback();
   },
   signout(callback: VoidFunction) {
     fakeAuthProvider.isAuthenticated = false;
-    setTimeout(callback, 100);
+    callback();
   },
 };
 
